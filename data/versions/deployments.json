@@ -1,3 +1,13 @@
 {
-  "deployments": []
+  "deployments": [
+    {
+      "version": "1.1.0",
+      "date": "2025-11-09",
+      "commit": "57290e17d1f08c473fca3f545b760ee79a20a53a",
+      "shortCommit": "57290e1",
+      "commits": [],
+      "summary": "Deployment",
+      "changes": {}
+    }
+  ]
 }
