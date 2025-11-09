@@ -354,6 +354,8 @@ function main() {
   const currentCommit = getCurrentCommit()
   const isDeployment = isProductionDeployment()
   
+  const versionString = `${currentVersion.major}.${currentVersion.minor}.${currentVersion.patch}`
+
   // Calculate commits since last major version
   const commitsSinceMajor = getCommitsSinceDate(currentVersion.lastMajorUpdate)
   currentVersion.commitsSinceLastMajor = commitsSinceMajor
@@ -394,9 +396,9 @@ function main() {
   }
   
   // Save version
+  currentVersion.version = versionString
   saveVersion(currentVersion)
   
-  const versionString = `${currentVersion.major}.${currentVersion.minor}.${currentVersion.patch}`
   console.log(`✅ Current version: ${versionString}`)
   console.log(`   - Major: ${currentVersion.major} (manual)`)
   console.log(`   - Minor: ${currentVersion.minor} (${currentVersion.deploymentsSinceLastMajor} deployments)`)

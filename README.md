@@ -6,6 +6,7 @@
 
 [![CI](https://github.com/stocklidevs/IonSoup/actions/workflows/main.yml/badge.svg)](https://github.com/stocklidevs/IonSoup/actions/workflows/main.yml)
 [![Last Commit](https://img.shields.io/github/last-commit/stocklidevs/IonSoup)](https://github.com/stocklidevs/IonSoup/commits/master)
+[![Version](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2Fstocklidevs%2FIonSoup%2Fmaster%2Fdata%2Fversions%2Fcurrent-version.json&query=version&label=version)](https://github.com/stocklidevs/IonSoup/blob/master/data/versions/current-version.json)
 
 A smart camera app that brings instant, automated line-calling by detecting whether each ball lands inside or outside the boundaries of the court.
 
