@@ -17,3 +17,6 @@ All notable changes to this project will be documented in this file.
 - Created `src/data_processing` and `src/modeling` for code organization.
 - Added `README.md` with project description and structure overview.
 - Moved existing images to `data/raw_images`.
+
+### Fixed
+- Granted write permissions to the GitHub Actions workflow to allow auto-commits.
