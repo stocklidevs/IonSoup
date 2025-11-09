@@ -8,6 +8,15 @@
       "commits": [],
       "summary": "Deployment",
       "changes": {}
+    },
+    {
+      "version": "1.2.0",
+      "date": "2025-11-09",
+      "commit": "1051961874ec58cd801d25d038a7bd9a78af36b4",
+      "shortCommit": "1051961",
+      "commits": [],
+      "summary": "Deployment",
+      "changes": {}
     }
   ]
 }
