@@ -1,10 +1,10 @@
 {
   "major": 1,
-  "minor": 0,
-  "patch": 1,
+  "minor": 1,
+  "patch": 0,
   "lastMajorUpdate": "2025-11-09",
-  "lastDeployment": null,
-  "lastDeploymentCommit": null,
-  "commitsSinceLastMajor": 1,
-  "deploymentsSinceLastMajor": 0
+  "lastDeployment": "2025-11-09",
+  "lastDeploymentCommit": "57290e17d1f08c473fca3f545b760ee79a20a53a",
+  "commitsSinceLastMajor": 0,
+  "deploymentsSinceLastMajor": 1
 }
