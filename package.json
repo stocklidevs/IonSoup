@@ -1,0 +1,13 @@
+{
+  "name": "ionsoup",
+  "version": "1.0.0",
+  "description": "Pickleball Line Calling Project",
+  "main": "index.js",
+  "scripts": {
+    "version:init": "node scripts/initialize-version-history.js",
+    "version:update": "node scripts/update-version.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
