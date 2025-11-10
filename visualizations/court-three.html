@@ -3,39 +3,332 @@
 <head>
 <meta charset="UTF-8" />
 <title>Three-JS Pickleball Court</title>
-<style>body,html{margin:0;height:100%;overflow:hidden}#gui{position:fixed;top:10px;left:10px;z-index:10}</style>
+<style>
+body, html {
+    margin: 0;
+    height: 100%;
+    overflow: hidden;
+    font-family: 'Inter', sans-serif;
+    background: #0b0f17;
+    color: #ffffff;
+}
+
+#controlPanel {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    width: 300px;
+    max-height: calc(100vh - 40px);
+    overflow-y: auto;
+    background: rgba(8, 12, 18, 0.82);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 14px;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    z-index: 2000; /* Ensure it appears above everything */
+}
+
+#controlPanel::-webkit-scrollbar {
+    width: 8px;
+}
+
+#controlPanel::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.25);
+    border-radius: 4px;
+}
+
+#controlPanel::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.panel {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.panel:last-child {
+    border-bottom: none;
+}
+
+.panel summary {
+    padding: 12px 16px;
+    cursor: pointer;
+    user-select: none;
+    font-weight: 600;
+    font-size: 14px;
+    letter-spacing: 0.02em;
+    transition: background 0.2s ease;
+}
+
+.panel summary:hover {
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.panel-body {
+    padding: 16px;
+}
+
+.control-field {
+    margin-bottom: 12px;
+}
+
+.control-field label {
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    margin-bottom: 6px;
+    color: #ffffff;
+}
+
+.control-field select {
+    width: 100%;
+    padding: 8px 12px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 6px;
+    color: #ffffff;
+    font-size: 13px;
+}
+
+.control-field select:focus {
+    outline: none;
+    border-color: rgba(255, 255, 255, 0.28);
+    background: rgba(255, 255, 255, 0.12);
+}
+
+.control-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    font-size: 13px;
+}
+
+.toggle {
+    position: relative;
+    width: 46px;
+    height: 24px;
+    display: inline-block;
+}
+
+.toggle input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.toggle-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: #606470;
+    border-radius: 24px;
+    transition: 0.3s;
+}
+
+.toggle-slider:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+    background: white;
+    border-radius: 50%;
+    transition: 0.3s;
+}
+
+.toggle input:checked + .toggle-slider {
+    background: #2ecc71;
+}
+
+.toggle input:checked + .toggle-slider:before {
+    transform: translateX(22px);
+}
+
+.axis-field {
+    margin-bottom: 8px;
+}
+
+.axis-field span {
+    display: inline-block;
+    width: 20px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.input-group {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.input-group input[type="range"] {
+    flex: 1;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.12);
+    border-radius: 3px;
+    outline: none;
+}
+
+.input-group input[type="range"]::-webkit-slider-thumb {
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    background: #ffffff;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.input-group input[type="number"] {
+    width: 60px;
+    padding: 4px 8px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 4px;
+    color: #ffffff;
+    font-size: 12px;
+    text-align: center;
+}
+
+.input-group input[type="number"]:focus {
+    outline: none;
+    border-color: rgba(255, 255, 255, 0.28);
+    background: rgba(255, 255, 255, 0.12);
+}
+</style>
 </head>
 <body>
-<div id="gui">
-  <button onclick="topView()">Top</button>
-  <button onclick="frontView()">Front</button>
-  <button onclick="sideView()">Side</button>
-  <button onclick="isometricView()">Iso</button>
-  <button onclick="resetView()">Reset View</button>
-  <button id="ballToggle" onclick="toggleBall()">Ball: ON</button>
+<div id="controlPanel">
+  <!-- Ball Controls -->
+  <details class="panel">
+    <summary>🎾 Ball Controls</summary>
+    <div class="panel-body">
+      <div class="control-row">
+        <span>Ball Animation</span>
+        <label class="toggle">
+          <input type="checkbox" id="ballToggleInput" checked>
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+      <div class="control-field">
+        <label for="launchAngle">Launch Angle (°)</label>
+        <div class="input-group">
+          <input type="range" id="launchAngle" min="15" max="75" value="45" step="1">
+          <input type="number" id="launchAngleNumber" min="15" max="75" value="45">
+        </div>
+      </div>
+      <div class="control-field">
+        <label for="ballSpeed">Ball Speed (%)</label>
+        <div class="input-group">
+          <input type="range" id="ballSpeed" min="50" max="150" value="100" step="1">
+          <input type="number" id="ballSpeedNumber" min="50" max="150" value="100">
+        </div>
+      </div>
+    </div>
+  </details>
+
+  <!-- Camera Position Controls -->
+  <details class="panel">
+    <summary>📹 Camera Position</summary>
+    <div class="panel-body">
+      <div class="control-field">
+        <label for="sceneViewSelect">Preset Views</label>
+        <select id="sceneViewSelect">
+          <option value="" selected disabled>Select a view</option>
+          <option value="isometric">Isometric</option>
+          <option value="top">Top</option>
+          <option value="front">Front</option>
+          <option value="side">Side</option>
+          <option value="reset">Reset Orbit</option>
+        </select>
+      </div>
+      <div class="axis-field">
+        <span>Custom Position</span>
+        <div class="axis-field">
+          <span>X</span>
+          <div class="input-group">
+            <input type="range" id="camPosX" min="1" max="12" step="0.1" value="6">
+            <input type="number" id="camPosXNumber" min="1" max="12" step="0.1" value="6">
+          </div>
+        </div>
+        <div class="axis-field">
+          <span>Y</span>
+          <div class="input-group">
+            <input type="range" id="camPosY" min="1" max="12" step="0.1" value="6">
+            <input type="number" id="camPosYNumber" min="1" max="12" step="0.1" value="6">
+          </div>
+        </div>
+        <div class="axis-field">
+          <span>Z</span>
+          <div class="input-group">
+            <input type="range" id="camPosZ" min="-15" max="15" step="0.1" value="10">
+            <input type="number" id="camPosZNumber" min="-15" max="15" step="0.1" value="10">
+          </div>
+        </div>
+      </div>
+    </div>
+  </details>
+
+  <!-- Camera Lens Parameters -->
+  <details class="panel">
+    <summary>📷 Camera Lens</summary>
+    <div class="panel-body">
+      <div class="control-field">
+        <label for="camFocalLength">Focal Length (mm)</label>
+        <div class="input-group">
+          <input type="range" id="camFocalLength" min="10" max="200" step="1" value="35">
+          <input type="number" id="camFocalLengthNumber" min="10" max="200" step="1" value="35">
+        </div>
+      </div>
+      <div class="control-field">
+        <label for="camSensorWidth">Sensor Width (mm)</label>
+        <div class="input-group">
+          <input type="range" id="camSensorWidth" min="10" max="50" step="0.1" value="36">
+          <input type="number" id="camSensorWidthNumber" min="10" max="50" step="0.1" value="36">
+        </div>
+      </div>
+      <div class="control-field">
+        <label for="camFocusDistance">Focus Distance (m)</label>
+        <div class="input-group">
+          <input type="range" id="camFocusDistance" min="1" max="20" step="0.1" value="12">
+          <input type="number" id="camFocusDistanceNumber" min="1" max="20" step="0.1" value="12">
+        </div>
+      </div>
+    </div>
+  </details>
+
+  <!-- Picture-in-Picture -->
+  <details class="panel">
+    <summary>📺 Picture-in-Picture</summary>
+    <div class="panel-body">
+      <div class="control-row">
+        <span>Enable PiP</span>
+        <label class="toggle">
+          <input type="checkbox" id="pipToggleInput">
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+      <div class="control-row">
+        <span>Line Detection</span>
+        <label class="toggle">
+          <input type="checkbox" id="lineDetectionToggleInput">
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+    </div>
+  </details>
 </div>
-<div style="position: absolute; top: 40px; left: 10px; color: white; font-family: sans-serif; background: rgba(0,0,0,0.5); padding: 10px; border-radius: 5px;">
-    <div style="margin-bottom: 5px;">
-        <label for="launchAngle" style="width: 120px; display: inline-block;">Launch Angle:</label>
-        <input type="range" id="launchAngle" min="15" max="75" value="45" step="1">
-        <span id="angleValue" style="width: 40px; display: inline-block; text-align: right;">45°</span>
-    </div>
-    <div style="margin-bottom: 5px;">
-        <label for="ballSpeed" style="width: 120px; display: inline-block;">Ball Speed:</label>
-        <input type="range" id="ballSpeed" min="50" max="150" value="100" step="1">
-        <span id="speedValue" style="width: 40px; display: inline-block; text-align: right;">100%</span>
-    </div>
-    <div>
-        <label for="startPosX" style="width: 120px; display: inline-block;">Start Position (X):</label>
-        <input type="range" id="startPosX" min="-3" max="3" value="0" step="0.1">
-        <span id="startPosXValue" style="width: 40px; display: inline-block; text-align: right;">0.0m</span>
-    </div>
-    <div>
-        <label for="startPosY" style="width: 120px; display: inline-block;">Start Position (Y):</label>
-        <input type="range" id="startPosY" min="2.2" max="6.7" value="5.7" step="0.1">
-        <span id="startPosYValue" style="width: 40px; display: inline-block; text-align: right;">5.7m</span>
-    </div>
+
+<!-- Picture-in-Picture Container -->
+<div id="pipContainer" style="position: absolute; top: 20px; right: 20px; width: 320px; height: 180px; background: rgba(0,0,0,0.8); border: 2px solid #ffffff; border-radius: 8px; display: none; z-index: 1000;">
+  <canvas id="pipView" style="width: 100%; height: 100%; border-radius: 6px;"></canvas>
 </div>
+
+<!-- Drawing Canvas Overlay -->
+<canvas id="drawingCanvas" style="position: absolute; top: 0; left: 0; pointer-events: none; z-index: 100;"></canvas>
 
 <!-- Load Three.js from CDN -->
 <script src="https://cdn.jsdelivr.net/npm/three@0.146.0/build/three.min.js"></script>
@@ -54,6 +347,30 @@ const clock = new THREE.Clock();
 
 let nearBaseline, farBaseline;
 let ball;
+let playerModel = null;
+let lineDetectionVisuals = null;
+let virtualLinesVisuals = null;
+let drawingCanvas, drawingCtx;
+let drawingEnabled = false;
+let isDrawing = false;
+let lineDetectionEnabled = false;
+let virtualLinesEnabled = false;
+let playerVisible = false;
+let detectionCamera;
+let detectionCameraHelper;
+let detectionCameraTargetMesh;
+const detectionCameraPosition = new THREE.Vector3(0, 6, 10);
+const detectionCameraTarget = new THREE.Vector3(0, 0, 0);
+const detectionCameraSettings = {
+    sensorWidth: 36,
+    sensorHeight: 20,
+    focalLength: 35,
+    focusDistance: 12
+};
+let pipRenderer;
+let pipCanvas;
+let pipContainer;
+let pipEnabled = false;
 const g = 9.8;
 
 const ballRadius = 0.04;
@@ -89,14 +406,23 @@ function init() {
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setClearColor(0x202020);
     document.body.appendChild(renderer.domElement);
+
+    // Position the canvas to fill the screen
+    renderer.domElement.style.position = 'absolute';
+    renderer.domElement.style.top = '0';
+    renderer.domElement.style.left = '0';
     
     controls.target.set(0, 0, 0);
     controls.enableDamping = true;
     
     createCourt();
     createBall();
+    createDetectionCamera();
+    createPiPRenderer();
+    createPlayer();
+    initDrawing();
     setupEventListeners();
-    
+
     resetView();
     animate();
 }
@@ -255,38 +581,208 @@ function updateBaselineFlash() {
     }
 }
 
+function bindRangeAndNumber(rangeElement, numberElement, onValueChanged) {
+    if (!rangeElement || !numberElement) return;
+    const min = parseFloat(rangeElement.min);
+    const max = parseFloat(rangeElement.max);
+    const clamp = value => Math.min(max, Math.max(min, value));
+
+    const sync = value => {
+        const parsed = parseFloat(value);
+        if (!Number.isFinite(parsed)) return;
+        const clamped = clamp(parsed);
+        if (rangeElement.value !== clamped.toString()) rangeElement.value = clamped;
+        if (numberElement.value !== clamped.toString()) numberElement.value = clamped;
+        if (typeof onValueChanged === 'function') {
+            onValueChanged(clamped);
+        }
+    };
+
+    rangeElement.addEventListener('input', () => sync(rangeElement.value));
+    numberElement.addEventListener('input', () => sync(numberElement.value));
+    sync(rangeElement.value);
+}
+
 function setupEventListeners() {
-    document.getElementById('launchAngle').addEventListener('input', e => {
-        const angle = parseInt(e.target.value);
-        ballAnimation.launchAngleDeg = angle;
-        document.getElementById('angleValue').textContent = `${angle}°`;
-        resetBallAnimation();
-    });
-    document.getElementById('ballSpeed').addEventListener('input', e => {
-        const speed = parseInt(e.target.value);
-        ballAnimation.speedMultiplier = speed / 100;
-        document.getElementById('speedValue').textContent = `${speed}%`;
-        resetBallAnimation();
-    });
-    document.getElementById('startPosX').addEventListener('input', e => {
-        const xPos = parseFloat(e.target.value);
-        ballAnimation.startPos.x = xPos;
-        ballAnimation.endPos.x = -xPos;
-        document.getElementById('startPosXValue').textContent = `${xPos.toFixed(1)}m`;
-        resetBallAnimation();
-    });
-    document.getElementById('startPosY').addEventListener('input', e => {
-        const zPos = parseFloat(e.target.value);
-        const travelDistance = L - 2 * courtMargin;
-        ballAnimation.startPos.z = zPos;
-        ballAnimation.endPos.z = zPos - travelDistance;
-        document.getElementById('startPosYValue').textContent = `${zPos.toFixed(1)}m`;
-        resetBallAnimation();
-    });
+    // Camera view dropdown
+    const sceneViewSelect = document.getElementById('sceneViewSelect');
+    if (sceneViewSelect) {
+        sceneViewSelect.addEventListener('change', () => {
+            const mode = sceneViewSelect.value;
+            if (mode === 'top') window.topView();
+            else if (mode === 'front') window.frontView();
+            else if (mode === 'side') window.sideView();
+            else if (mode === 'isometric') window.isometricView();
+            else if (mode === 'reset') window.resetView();
+        });
+    }
+
+    // Ball toggle
+    const ballToggleInput = document.getElementById('ballToggleInput');
+    if (ballToggleInput) {
+        ballToggleInput.addEventListener('change', () => {
+            window.toggleBall();
+        });
+    }
+
+    // Player toggle
+    const playerToggleInput = document.getElementById('playerToggleInput');
+    if (playerToggleInput) {
+        playerToggleInput.addEventListener('change', () => {
+            togglePlayer();
+        });
+    }
+
+    // Line detection toggles
+    const lineDetectionToggleInput = document.getElementById('lineDetectionToggleInput');
+    if (lineDetectionToggleInput) {
+        lineDetectionToggleInput.addEventListener('change', () => {
+            toggleLineDetection();
+        });
+    }
+
+    const virtualLinesToggleInput = document.getElementById('virtualLinesToggleInput');
+    if (virtualLinesToggleInput) {
+        virtualLinesToggleInput.addEventListener('change', () => {
+            toggleVirtualLines();
+        });
+    }
+
+    // PiP toggle
+    const pipToggleInput = document.getElementById('pipToggleInput');
+    if (pipToggleInput) {
+        pipToggleInput.addEventListener('change', () => {
+            togglePiP();
+        });
+    }
+
+    // Drawing toggle
+    const drawingToggleInput = document.getElementById('drawingToggleInput');
+    if (drawingToggleInput) {
+        drawingToggleInput.addEventListener('change', () => {
+            toggleDrawing();
+        });
+    }
+
+    // Paired range/number inputs
+    bindRangeAndNumber(
+        document.getElementById('launchAngle'),
+        document.getElementById('launchAngleNumber'),
+        (value) => {
+            ballAnimation.launchAngleDeg = value;
+            resetBallAnimation();
+        }
+    );
+
+    bindRangeAndNumber(
+        document.getElementById('ballSpeed'),
+        document.getElementById('ballSpeedNumber'),
+        (value) => {
+            ballAnimation.speedMultiplier = value / 100;
+            resetBallAnimation();
+        }
+    );
+
+    bindRangeAndNumber(
+        document.getElementById('startPosX'),
+        document.getElementById('startPosXNumber'),
+        (value) => {
+            ballAnimation.startPos.x = value;
+            ballAnimation.endPos.x = -value;
+            resetBallAnimation();
+        }
+    );
+
+    bindRangeAndNumber(
+        document.getElementById('startPosY'),
+        document.getElementById('startPosYNumber'),
+        (value) => {
+            const travelDistance = L - 2 * courtMargin;
+            ballAnimation.startPos.z = value;
+            ballAnimation.endPos.z = value - travelDistance;
+            resetBallAnimation();
+        }
+    );
+
+    // Detection camera position controls
+    bindRangeAndNumber(
+        document.getElementById('camPosX'),
+        document.getElementById('camPosXNumber'),
+        (value) => {
+            detectionCameraPosition.x = value;
+            updateDetectionCameraPosition();
+        }
+    );
+
+    bindRangeAndNumber(
+        document.getElementById('camPosY'),
+        document.getElementById('camPosYNumber'),
+        (value) => {
+            detectionCameraPosition.y = value;
+            updateDetectionCameraPosition();
+        }
+    );
+
+    bindRangeAndNumber(
+        document.getElementById('camPosZ'),
+        document.getElementById('camPosZNumber'),
+        (value) => {
+            detectionCameraPosition.z = value;
+            updateDetectionCameraPosition();
+        }
+    );
+
+    // Detection camera lens controls
+    bindRangeAndNumber(
+        document.getElementById('camSensorWidth'),
+        document.getElementById('camSensorWidthNumber'),
+        (value) => {
+            detectionCameraSettings.sensorWidth = value;
+            updateDetectionCameraLens();
+        }
+    );
+
+    bindRangeAndNumber(
+        document.getElementById('camSensorHeight'),
+        document.getElementById('camSensorHeightNumber'),
+        (value) => {
+            detectionCameraSettings.sensorHeight = value;
+            updateDetectionCameraLens();
+        }
+    );
+
+    bindRangeAndNumber(
+        document.getElementById('camFocalLength'),
+        document.getElementById('camFocalLengthNumber'),
+        (value) => {
+            detectionCameraSettings.focalLength = value;
+            updateDetectionCameraLens();
+        }
+    );
+
+    bindRangeAndNumber(
+        document.getElementById('camFocusDistance'),
+        document.getElementById('camFocusDistanceNumber'),
+        (value) => {
+            detectionCameraSettings.focusDistance = value;
+            updateDetectionCameraLens();
+        }
+    );
+
     window.addEventListener('resize', () => {
         camera.aspect = window.innerWidth / window.innerHeight;
         camera.updateProjectionMatrix();
         renderer.setSize(window.innerWidth, window.innerHeight);
+
+        // Update drawing canvas size
+        if (drawingCanvas) {
+            drawingCanvas.width = window.innerWidth;
+            drawingCanvas.height = window.innerHeight;
+            drawingCanvas.style.width = window.innerWidth + 'px';
+            drawingCanvas.style.height = window.innerHeight + 'px';
+        }
+
+        updatePiPSize();
     });
 }
 
@@ -301,7 +797,10 @@ window.sideView = () => setCam(10, 5, 0);
 window.isometricView = () => setCam(8, 6, 8);
 window.toggleBall = () => {
     ballAnimation.enabled = !ballAnimation.enabled;
-    document.getElementById('ballToggle').textContent = ballAnimation.enabled ? 'Ball: ON' : 'Ball: OFF';
+    const ballToggleInput = document.getElementById('ballToggleInput');
+    if (ballToggleInput) {
+        ballToggleInput.checked = ballAnimation.enabled;
+    }
     if (ball) ball.visible = ballAnimation.enabled;
     if (ballAnimation.enabled) resetBallAnimation();
 };
@@ -315,6 +814,419 @@ function animate() {
 
     controls.update();
     renderer.render(scene, camera);
+
+    if (pipEnabled && lineDetectionEnabled && pipRenderer && detectionCamera) {
+        pipRenderer.render(scene, detectionCamera);
+    }
+}
+
+// Line Detection Functions
+function showLineDetection() {
+    if (!lineDetectionVisuals) {
+        lineDetectionVisuals = new THREE.Group();
+        scene.add(lineDetectionVisuals);
+    } else {
+        scene.remove(lineDetectionVisuals);
+        lineDetectionVisuals.clear();
+    }
+
+    if (ball) {
+        // Green ray from detection camera to ball
+        const rayGeometry = new THREE.BufferGeometry().setFromPoints([
+            detectionCamera.position.clone(),
+            ball.position.clone()
+        ]);
+        const rayMaterial = new THREE.LineBasicMaterial({ color: 0x00ff00 });
+        const ray = new THREE.Line(rayGeometry, rayMaterial);
+        lineDetectionVisuals.add(ray);
+
+        // Red sphere at ball position
+        const sphereGeometry = new THREE.SphereGeometry(0.05, 16, 16);
+        const sphereMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+        const sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
+        sphere.position.copy(ball.position);
+        lineDetectionVisuals.add(sphere);
+
+        // Indicator cube (in/out of bounds)
+        const isInBounds = Math.abs(ball.position.z) <= L/2;
+        const cubeGeometry = new THREE.BoxGeometry(0.1, 0.1, 0.1);
+        const cubeMaterial = new THREE.MeshBasicMaterial({ color: isInBounds ? 0x00ff00 : 0xff0000 });
+        const cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
+        cube.position.set(ball.position.x + 0.2, ball.position.y + 0.2, ball.position.z);
+        lineDetectionVisuals.add(cube);
+    }
+}
+
+function hideLineDetection() {
+    if (lineDetectionVisuals) {
+        scene.remove(lineDetectionVisuals);
+        lineDetectionVisuals = null;
+    }
+}
+
+function toggleLineDetection() {
+    lineDetectionEnabled = !lineDetectionEnabled;
+    const toggleInput = document.getElementById('lineDetectionToggleInput');
+    if (toggleInput) toggleInput.checked = lineDetectionEnabled;
+
+    if (lineDetectionEnabled) {
+        showLineDetection();
+    } else {
+        hideLineDetection();
+    }
+    updatePiPVisibility();
+}
+
+// Virtual Lines Functions
+function showVirtualLines() {
+    if (!virtualLinesVisuals) {
+        virtualLinesVisuals = new THREE.Group();
+        scene.add(virtualLinesVisuals);
+    } else {
+        scene.remove(virtualLinesVisuals);
+        virtualLinesVisuals.clear();
+    }
+
+    const netHeight = 0.914;
+    const corners = [
+        new THREE.Vector3(-W/2, 0, -L/2),
+        new THREE.Vector3(W/2, 0, -L/2),
+        new THREE.Vector3(W/2, 0, L/2),
+        new THREE.Vector3(-W/2, 0, L/2)
+    ];
+
+    const netCenterGround = new THREE.Vector3(0, 0, 0);
+    const netCenterTop = new THREE.Vector3(0, netHeight, 0);
+
+    // Yellow dashed lines from net center to corners
+    corners.forEach(corner => {
+        const geometry = new THREE.BufferGeometry().setFromPoints([netCenterGround, corner]);
+        const material = new THREE.LineDashedMaterial({
+            color: 0xffff00,
+            dashSize: 0.1,
+            gapSize: 0.05
+        });
+        const line = new THREE.Line(geometry, material);
+        line.computeLineDistances();
+        virtualLinesVisuals.add(line);
+    });
+
+    // Cyan vertical line at net center
+    const verticalGeometry = new THREE.BufferGeometry().setFromPoints([netCenterGround, netCenterTop]);
+    const verticalMaterial = new THREE.LineDashedMaterial({
+        color: 0x00ffff,
+        dashSize: 0.1,
+        gapSize: 0.05
+    });
+    const verticalLine = new THREE.Line(verticalGeometry, verticalMaterial);
+    verticalLine.computeLineDistances();
+    virtualLinesVisuals.add(verticalLine);
+
+    // Cyan spheres at net center
+    const sphereGeometry = new THREE.SphereGeometry(0.05, 16, 16);
+    const sphereMaterial = new THREE.MeshBasicMaterial({ color: 0x00ffff });
+
+    const groundSphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
+    groundSphere.position.copy(netCenterGround);
+    virtualLinesVisuals.add(groundSphere);
+
+    const topSphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
+    topSphere.position.copy(netCenterTop);
+    virtualLinesVisuals.add(topSphere);
+}
+
+function hideVirtualLines() {
+    if (virtualLinesVisuals) {
+        scene.remove(virtualLinesVisuals);
+        virtualLinesVisuals = null;
+    }
+}
+
+function toggleVirtualLines() {
+    virtualLinesEnabled = !virtualLinesEnabled;
+    const toggleInput = document.getElementById('virtualLinesToggleInput');
+    if (toggleInput) toggleInput.checked = virtualLinesEnabled;
+
+    if (virtualLinesEnabled) {
+        showVirtualLines();
+    } else {
+        hideVirtualLines();
+    }
+}
+
+// Detection Camera Functions
+function createDetectionCamera() {
+    detectionCamera = new THREE.PerspectiveCamera(45, 16/9, 0.1, 50);
+    detectionCamera.position.copy(detectionCameraPosition);
+    detectionCamera.lookAt(detectionCameraTarget);
+
+    // Camera helper to visualize frustum
+    detectionCameraHelper = new THREE.CameraHelper(detectionCamera);
+    scene.add(detectionCameraHelper);
+
+    // Target mesh (orange sphere)
+    const targetGeometry = new THREE.SphereGeometry(0.1, 16, 16);
+    const targetMaterial = new THREE.MeshBasicMaterial({ color: 0xffaa00 });
+    detectionCameraTargetMesh = new THREE.Mesh(targetGeometry, targetMaterial);
+    detectionCameraTargetMesh.position.copy(detectionCameraTarget);
+    scene.add(detectionCameraTargetMesh);
+
+    updateDetectionCameraLens();
+}
+
+function updateDetectionCameraPosition(updateLines = true) {
+    if (!detectionCamera) return;
+
+    detectionCamera.position.set(
+        detectionCameraPosition.x,
+        detectionCameraPosition.y,
+        detectionCameraPosition.z
+    );
+    detectionCamera.lookAt(detectionCameraTarget);
+
+    if (detectionCameraHelper) {
+        detectionCameraHelper.update();
+    }
+
+    if (detectionCameraTargetMesh) {
+        detectionCameraTargetMesh.position.copy(detectionCameraTarget);
+    }
+
+    if (updateLines && lineDetectionEnabled) {
+        if (lineDetectionVisuals) {
+            scene.remove(lineDetectionVisuals);
+            lineDetectionVisuals = null;
+        }
+        showLineDetection();
+    }
+
+    updatePiPSize();
+}
+
+function updateDetectionCameraLens(updateLines = true) {
+    if (!detectionCamera) return;
+
+    const { sensorWidth, sensorHeight, focalLength, focusDistance } = detectionCameraSettings;
+    const verticalFovRad = 2 * Math.atan((sensorHeight / 2) / focalLength);
+    const verticalFovDeg = THREE.MathUtils.radToDeg(verticalFovRad);
+
+    detectionCamera.fov = THREE.MathUtils.clamp(verticalFovDeg, 5, 120);
+    detectionCamera.aspect = sensorWidth / sensorHeight;
+
+    const minNear = 0.05;
+    const near = Math.max(minNear, focusDistance / 100);
+    detectionCamera.near = near;
+    detectionCamera.far = Math.max(near + 0.1, focusDistance);
+
+    detectionCamera.updateProjectionMatrix();
+
+    if (detectionCameraHelper) {
+        detectionCameraHelper.update();
+    }
+
+    updatePiPSize();
+
+    if (updateLines && lineDetectionEnabled) {
+        if (lineDetectionVisuals) {
+            scene.remove(lineDetectionVisuals);
+            lineDetectionVisuals = null;
+        }
+        showLineDetection();
+    }
+}
+
+// Picture-in-Picture Functions
+function createPiPRenderer() {
+    pipCanvas = document.getElementById('pipView');
+    pipContainer = document.getElementById('pipContainer');
+    if (!pipCanvas || !pipContainer) return;
+
+    pipRenderer = new THREE.WebGLRenderer({ canvas: pipCanvas, alpha: true, antialias: true, preserveDrawingBuffer: false });
+    pipRenderer.setClearColor(0x000000, 0);
+    pipRenderer.autoClear = true;
+    pipRenderer.setPixelRatio(window.devicePixelRatio);
+    updatePiPSize();
+    updatePiPVisibility();
+}
+
+function updatePiPSize() {
+    if (!pipRenderer || !pipContainer || !pipCanvas) return;
+    const baseWidth = 320;
+    const aspect = detectionCamera ? detectionCamera.aspect : (16 / 9);
+    const width = baseWidth;
+    const height = width / aspect;
+    pipContainer.style.width = `${width}px`;
+    pipContainer.style.height = `${height}px`;
+    pipCanvas.width = width;
+    pipCanvas.height = height;
+    pipRenderer.setSize(width, height, false);
+}
+
+function updatePiPVisibility() {
+    if (!pipContainer) return;
+    pipContainer.style.display = (pipEnabled && lineDetectionEnabled) ? 'block' : 'none';
+}
+
+function togglePiP() {
+    pipEnabled = !pipEnabled;
+    const toggleInput = document.getElementById('pipToggleInput');
+    if (toggleInput) toggleInput.checked = pipEnabled;
+
+    if (pipEnabled) {
+        updateDetectionCameraPosition(false);
+    }
+    updatePiPVisibility();
+}
+
+// Player Model Functions
+function createPlayer() {
+    playerModel = new THREE.Group();
+
+    // Body (cylinder)
+    const bodyGeom = new THREE.CylinderGeometry(0.15, 0.15, 1.6, 8);
+    const bodyMat = new THREE.MeshBasicMaterial({ color: 0x0066ff });
+    const body = new THREE.Mesh(bodyGeom, bodyMat);
+    body.position.y = 0.8;
+    playerModel.add(body);
+
+    // Head (sphere)
+    const headGeom = new THREE.SphereGeometry(0.12, 16, 16);
+    const headMat = new THREE.MeshBasicMaterial({ color: 0xffdbac });
+    const head = new THREE.Mesh(headGeom, headMat);
+    head.position.y = 1.6;
+    playerModel.add(head);
+
+    // Arms (boxes)
+    const armGeom = new THREE.BoxGeometry(0.08, 0.6, 0.08);
+    const armMat = new THREE.MeshBasicMaterial({ color: 0xffdbac });
+    const leftArm = new THREE.Mesh(armGeom, armMat);
+    leftArm.position.set(-0.25, 0.9, 0);
+    playerModel.add(leftArm);
+
+    const rightArm = new THREE.Mesh(armGeom, armMat);
+    rightArm.position.set(0.25, 0.9, 0);
+    playerModel.add(rightArm);
+
+    // Legs (boxes)
+    const legGeom = new THREE.BoxGeometry(0.1, 0.8, 0.1);
+    const legMat = new THREE.MeshBasicMaterial({ color: 0x0066ff });
+    const leftLeg = new THREE.Mesh(legGeom, legMat);
+    leftLeg.position.set(-0.12, -0.4, 0);
+    playerModel.add(leftLeg);
+
+    const rightLeg = new THREE.Mesh(legGeom, legMat);
+    rightLeg.position.set(0.12, -0.4, 0);
+    playerModel.add(rightLeg);
+
+    playerModel.position.set(0, 0, L/2 - 0.5);
+    playerModel.visible = playerVisible;
+    scene.add(playerModel);
+}
+
+function togglePlayer() {
+    playerVisible = !playerVisible;
+    if (playerModel) playerModel.visible = playerVisible;
+}
+
+// Drawing Functions
+function initDrawing() {
+    drawingCanvas = document.getElementById('drawingCanvas');
+    if (!drawingCanvas) return;
+
+    drawingCtx = drawingCanvas.getContext('2d');
+    drawingCanvas.width = window.innerWidth;
+    drawingCanvas.height = window.innerHeight;
+    drawingCanvas.style.width = window.innerWidth + 'px';
+    drawingCanvas.style.height = window.innerHeight + 'px';
+
+    drawingCanvas.addEventListener('mousedown', startDrawing);
+    drawingCanvas.addEventListener('mousemove', draw);
+    drawingCanvas.addEventListener('mouseup', stopDrawing);
+    drawingCanvas.addEventListener('mouseout', stopDrawing);
+
+    // Touch support
+    drawingCanvas.addEventListener('touchstart', handleTouch);
+    drawingCanvas.addEventListener('touchmove', handleTouch);
+    drawingCanvas.addEventListener('touchend', stopDrawing);
+
+    updateDrawingState();
+}
+
+function updateDrawingState() {
+    if (!drawingCanvas) return;
+    drawingCanvas.style.pointerEvents = drawingEnabled ? 'auto' : 'none';
+    drawingCanvas.style.cursor = drawingEnabled ? 'crosshair' : 'default';
+}
+
+function startDrawing(e) {
+    if (!drawingEnabled || !drawingCtx) return;
+    isDrawing = true;
+    const rect = drawingCanvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    drawingCtx.beginPath();
+    drawingCtx.moveTo(x, y);
+}
+
+function draw(e) {
+    if (!isDrawing || !drawingEnabled || !drawingCtx) return;
+    const rect = drawingCanvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    drawingCtx.lineTo(x, y);
+    drawingCtx.strokeStyle = '#ff0000';
+    drawingCtx.lineWidth = 3;
+    drawingCtx.stroke();
+}
+
+function stopDrawing() {
+    isDrawing = false;
+}
+
+function handleTouch(e) {
+    e.preventDefault();
+    const touch = e.touches[0] || e.changedTouches[0];
+    const mouseEvent = new MouseEvent(e.type.replace('touch', 'mouse'), {
+        clientX: touch.clientX,
+        clientY: touch.clientY
+    });
+    drawingCanvas.dispatchEvent(mouseEvent);
+}
+
+function toggleDrawing() {
+    drawingEnabled = !drawingEnabled;
+    const toggleInput = document.getElementById('drawingToggleInput');
+    if (toggleInput) toggleInput.checked = drawingEnabled;
+    updateDrawingState();
+}
+
+function clearDrawing() {
+    if (!drawingCtx) return;
+    drawingCtx.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
+}
+
+function captureScreenshot() {
+    const combinedCanvas = document.createElement('canvas');
+    const combinedCtx = combinedCanvas.getContext('2d');
+
+    combinedCanvas.width = window.innerWidth;
+    combinedCanvas.height = window.innerHeight;
+
+    // Draw the WebGL renderer first
+    combinedCtx.drawImage(renderer.domElement, 0, 0);
+
+    // Draw the drawing canvas on top
+    combinedCtx.drawImage(drawingCanvas, 0, 0);
+
+    // Download the image
+    combinedCanvas.toBlob((blob) => {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `pickleball-visualization-${Date.now()}.png`;
+        a.click();
+        URL.revokeObjectURL(url);
+    });
 }
 
 init();
