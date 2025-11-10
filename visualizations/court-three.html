@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Three-JS Pickleball Court</title>
+<style>body,html{margin:0;height:100%;overflow:hidden}#gui{position:fixed;top:10px;left:10px;z-index:10}</style>
+</head>
+<body>
+<div id="gui">
+  <button onclick="topView()">Top</button>
+  <button onclick="frontView()">Front</button>
+  <button onclick="sideView()">Side</button>
+  <button onclick="isometricView()">Iso</button>
+  <button onclick="resetView()">Reset</button>
+</div>
+
+<!-- Load Three.js from CDN -->
+<script src="https://cdn.jsdelivr.net/npm/three@0.146.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.146.0/examples/js/controls/OrbitControls.js"></script>
+
+<script>
+// Court dimensions in meters (20ft x 44ft ≈ 6.1m x 13.41m)
+const W = 6.1, L = 13.41;
+
+// Scene setup
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(45, window.innerWidth/window.innerHeight, 0.1, 1000);
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setClearColor(0x202020);
+document.body.appendChild(renderer.domElement);
+
+// OrbitControls
+const controls = new THREE.OrbitControls(camera, renderer.domElement);
+controls.target.set(0, 0, 0);
+controls.enableDamping = true;
+
+// Court surface
+const courtMat = new THREE.MeshBasicMaterial({ color: 0x2d5016, side: THREE.DoubleSide });
+const court = new THREE.Mesh(new THREE.PlaneGeometry(W, L), courtMat);
+court.rotation.x = -Math.PI / 2;
+scene.add(court);
+
+// Court lines
+const lineMat = new THREE.LineBasicMaterial({ color: 0xffffff });
+function addLine(points) {
+    const geometry = new THREE.BufferGeometry().setFromPoints(points);
+    scene.add(new THREE.Line(geometry, lineMat));
+}
+
+const v = (x, y, z) => new THREE.Vector3(x, y, z);
+addLine([v(-W/2, 0, -L/2), v(W/2, 0, -L/2)]); // far baseline
+addLine([v(-W/2, 0, L/2), v(W/2, 0, L/2)]);   // near baseline
+addLine([v(-W/2, 0, 0), v(W/2, 0, 0)]);       // net line
+
+// Kitchen lines (7ft = 2.134m from net)
+const kd = 2.134;
+addLine([v(-W/2, 0, -kd), v(W/2, 0, -kd)]); // far kitchen
+addLine([v(-W/2, 0, kd), v(W/2, 0, kd)]);   // near kitchen
+
+// Center service lines (broken into segments that don't cross kitchen)
+addLine([v(0, 0, -L/2), v(0, 0, -kd)]); // far service area to kitchen
+addLine([v(0, 0, kd), v(0, 0, L/2)]);   // kitchen to near service area
+
+// Lighting
+scene.add(new THREE.HemisphereLight(0xffffff, 0x444444, 1));
+
+// Camera presets
+function setCam(x, y, z) {
+    camera.position.set(x, y, z);
+    controls.update();
+}
+window.resetView = () => setCam(0, 5, 10);
+window.topView = () => setCam(0, 10, 0.01);
+window.frontView = () => setCam(0, 5, 10);
+window.sideView = () => setCam(10, 5, 0);
+window.isometricView = () => setCam(8, 6, 8);
+resetView();
+
+// Responsive
+window.addEventListener('resize', () => {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+});
+
+// Animation loop
+function animate() {
+    requestAnimationFrame(animate);
+    controls.update();
+    renderer.render(scene, camera);
+}
+animate();
+</script>
+</body>
+</html>

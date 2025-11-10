@@ -4,6 +4,25 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [1.1.0] - 2025-11-09
+
+### Added
+- **3D Pickleball Court Visualizer**: Created a fully interactive 3D court visualization using Three.js for YouTube content creation
+- **OrbitControls Integration**: Added professional 3D camera controls (orbit, pan, zoom) for intuitive navigation
+- **View Presets**: Implemented standard 3D view buttons (Top, Front, Side, Isometric) for quick camera positioning
+- **Accurate Court Geometry**: Implemented proper 3D court dimensions with correct line positioning and kitchen zones
+- **Perspective Rendering**: True 3D perspective where nearest baseline appears larger when tilted
+- **Interactive Mouse Controls**: Left-click orbit, right-click pan, scroll wheel zoom
+- **Segmented Center Service Line**: Center service line properly broken into segments that don't cross non-volley zones
+
+### Changed
+- **Visualization Technology**: Migrated from 2D Canvas to Three.js for professional 3D rendering capabilities
+- **Court Accuracy**: Updated court line positioning to match official pickleball specifications
+- **User Experience**: Replaced slider-based controls with industry-standard 3D navigation controls
+
+### Removed
+- **2D Canvas Files**: Deleted unused `pickleball-court.html` and `pickleball-court.js` files after successful migration to 3D
+
 ## [1.0.1] - 2025-11-09
 
 ### Added

@@ -2,10 +2,10 @@
 
 /**
  * Automatic versioning system
- * 
+ *
  * Major: Manual (set in current-version.json)
  * Minor: Number of deployments to production
- * Patch: Number of commits since last major version
+ * Patch: Total number of commits in repository (increments on every commit)
  */
 
 const { execSync } = require('child_process')
@@ -353,12 +353,15 @@ function main() {
   const currentVersion = loadCurrentVersion()
   const currentCommit = getCurrentCommit()
   const isDeployment = isProductionDeployment()
-  
+
   const versionString = `${currentVersion.major}.${currentVersion.minor}.${currentVersion.patch}`
 
   // Calculate commits since last major version
   const commitsSinceMajor = getCommitsSinceDate(currentVersion.lastMajorUpdate)
   currentVersion.commitsSinceLastMajor = commitsSinceMajor
+
+  // Get total commits for patch version
+  const totalCommits = getTotalCommits()
   
   // Check if this is a new deployment
   // If --deploy flag is passed, always treat as new deployment
@@ -389,9 +392,9 @@ function main() {
     }, null, 2))
   }
   
-  // Update patch version (commits)
-  currentVersion.patch = commitsSinceMajor
-  if (currentVersion.patch !== commitsSinceMajor) {
+  // Update patch version (commits) - increment on every commit
+  currentVersion.patch = totalCommits
+  if (currentVersion.patch !== totalCommits) {
     versionChanged = true
   }
   
@@ -402,7 +405,7 @@ function main() {
   console.log(`✅ Current version: ${versionString}`)
   console.log(`   - Major: ${currentVersion.major} (manual)`)
   console.log(`   - Minor: ${currentVersion.minor} (${currentVersion.deploymentsSinceLastMajor} deployments)`)
-  console.log(`   - Patch: ${currentVersion.patch} (${commitsSinceMajor} commits)`)
+  console.log(`   - Patch: ${currentVersion.patch} (${totalCommits} total commits)`)
   
   // Record deployment if this is a new deployment
   if (isNewDeployment) {
