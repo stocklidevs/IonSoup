@@ -43,24 +43,90 @@ scene.add(court);
 
 // Court lines
 const lineMat = new THREE.LineBasicMaterial({ color: 0xffffff });
+const numLines = 5; // Number of lines to create thickness
+
 function addLine(points) {
     const geometry = new THREE.BufferGeometry().setFromPoints(points);
     scene.add(new THREE.Line(geometry, lineMat));
 }
 
+function addThickLine(start, end, isHorizontal = true) {
+    // Add multiple lines close together to create thick line effect
+    for (let i = 0; i < numLines; i++) {
+        const offset = (i - numLines/2) * 0.01;
+        if (isHorizontal) {
+            // Horizontal line - offset in Z direction
+            addLine([v(start.x, 0.01, start.z + offset), v(end.x, 0.01, end.z + offset)]);
+        } else {
+            // Vertical line - offset in X direction
+            addLine([v(start.x + offset, 0.01, start.z), v(end.x + offset, 0.01, end.z)]);
+        }
+    }
+}
+
 const v = (x, y, z) => new THREE.Vector3(x, y, z);
-addLine([v(-W/2, 0, -L/2), v(W/2, 0, -L/2)]); // far baseline
-addLine([v(-W/2, 0, L/2), v(W/2, 0, L/2)]);   // near baseline
-addLine([v(-W/2, 0, 0), v(W/2, 0, 0)]);       // net line
+
+// Thick baselines
+addThickLine(v(-W/2, 0, -L/2), v(W/2, 0, -L/2), true); // far baseline
+addThickLine(v(-W/2, 0, L/2), v(W/2, 0, L/2), true);   // near baseline
+
+// Thick net line
+addThickLine(v(-W/2, 0, 0), v(W/2, 0, 0), true);       // net line
 
 // Kitchen lines (7ft = 2.134m from net)
 const kd = 2.134;
-addLine([v(-W/2, 0, -kd), v(W/2, 0, -kd)]); // far kitchen
-addLine([v(-W/2, 0, kd), v(W/2, 0, kd)]);   // near kitchen
+addThickLine(v(-W/2, 0, -kd), v(W/2, 0, -kd), true); // far kitchen
+addThickLine(v(-W/2, 0, kd), v(W/2, 0, kd), true);   // near kitchen
 
 // Center service lines (broken into segments that don't cross kitchen)
-addLine([v(0, 0, -L/2), v(0, 0, -kd)]); // far service area to kitchen
-addLine([v(0, 0, kd), v(0, 0, L/2)]);   // kitchen to near service area
+addThickLine(v(0, 0, -L/2), v(0, 0, -kd), false); // far service area to kitchen
+addThickLine(v(0, 0, kd), v(0, 0, L/2), false);   // kitchen to near service area
+
+// Thick boundary lines around entire court perimeter
+addThickLine(v(-W/2, 0, -L/2), v(W/2, 0, -L/2), true);  // Top boundary (far side)
+addThickLine(v(-W/2, 0, L/2), v(W/2, 0, L/2), true);    // Bottom boundary (near side)
+addThickLine(v(-W/2, 0, -L/2), v(-W/2, 0, L/2), false); // Left boundary
+addThickLine(v(W/2, 0, -L/2), v(W/2, 0, L/2), false);   // Right boundary
+
+// Net (36 inches at sidelines, 34 inches at center)
+const netHeightSideline = 0.914; // 36 inches in meters
+const netHeightCenter = 0.864;   // 34 inches in meters
+const netWidth = W; // Full court width
+
+// Create net mesh with grid pattern
+// Net should stand vertically, spanning the width of the court
+// PlaneGeometry(width, height) creates plane in XY plane (vertical, width along X, height along Y)
+const netGeometry = new THREE.PlaneGeometry(netWidth, netHeightSideline, 20, 10);
+const netMaterial = new THREE.MeshBasicMaterial({
+    color: 0x333333,
+    wireframe: true,
+    transparent: true,
+    opacity: 0.7,
+    side: THREE.DoubleSide
+});
+const net = new THREE.Mesh(netGeometry, netMaterial);
+net.position.set(0, netHeightSideline / 2, 0); // Center at net line, half height up
+// No rotation needed - XY plane is already vertical (perpendicular to flat court)
+scene.add(net);
+
+// Net posts (optional - small cylinders at each end)
+const postGeometry = new THREE.CylinderGeometry(0.05, 0.05, netHeightSideline, 8);
+const postMaterial = new THREE.MeshBasicMaterial({ color: 0x666666 });
+const leftPost = new THREE.Mesh(postGeometry, postMaterial);
+leftPost.position.set(-W/2, netHeightSideline / 2, 0);
+scene.add(leftPost);
+const rightPost = new THREE.Mesh(postGeometry, postMaterial);
+rightPost.position.set(W/2, netHeightSideline / 2, 0);
+scene.add(rightPost);
+
+// Top tape/border of net (white lead cord)
+// Tape should run along the top of the net, spanning the width
+const tapeGeometry = new THREE.BoxGeometry(netWidth, 0.05, 0.02);
+const tapeMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
+const topTape = new THREE.Mesh(tapeGeometry, tapeMaterial);
+topTape.position.set(0, netHeightSideline, 0); // At top of net, center of court
+// No rotation needed - BoxGeometry already spans X (width) and Y (vertical)
+scene.add(topTape);
 
 // Lighting
 scene.add(new THREE.HemisphereLight(0xffffff, 0x444444, 1));

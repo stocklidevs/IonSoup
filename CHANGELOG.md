@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
-## [1.1.0] - 2025-11-09
+## [1.1.6] - 2025-11-09
 
 ### Added
 - **3D Pickleball Court Visualizer**: Created a fully interactive 3D court visualization using Three.js for YouTube content creation
@@ -14,6 +14,9 @@ All notable changes to this project will be documented in this file.
 - **Perspective Rendering**: True 3D perspective where nearest baseline appears larger when tilted
 - **Interactive Mouse Controls**: Left-click orbit, right-click pan, scroll wheel zoom
 - **Segmented Center Service Line**: Center service line properly broken into segments that don't cross non-volley zones
+- **Thick White Boundary Lines**: Added prominent white boundary lines around entire court perimeter for better visibility
+- **Thick Court Markings**: All court lines (baselines, net line, kitchen lines, service lines) now use thick white lines for professional appearance
+- **3D Net with Posts**: Implemented realistic 3D net with wireframe mesh pattern, net posts at each end, and white top tape (lead cord)
 
 ### Changed
 - **Visualization Technology**: Migrated from 2D Canvas to Three.js for professional 3D rendering capabilities
