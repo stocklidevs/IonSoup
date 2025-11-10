@@ -17,6 +17,15 @@
       "commits": [],
       "summary": "Deployment",
       "changes": {}
+    },
+    {
+      "version": "1.2.1",
+      "date": "2025-11-10",
+      "commit": "49fdad27f92f9f5b9126aff30807b9ea78d5da43",
+      "shortCommit": "49fdad2",
+      "commits": [],
+      "summary": "Deployment",
+      "changes": {}
     }
   ]
 }
