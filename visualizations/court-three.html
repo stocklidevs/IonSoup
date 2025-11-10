@@ -43,24 +43,50 @@ scene.add(court);
 
 // Court lines
 const lineMat = new THREE.LineBasicMaterial({ color: 0xffffff });
+const numLines = 5; // Number of lines to create thickness
+
 function addLine(points) {
     const geometry = new THREE.BufferGeometry().setFromPoints(points);
     scene.add(new THREE.Line(geometry, lineMat));
 }
 
+function addThickLine(start, end, isHorizontal = true) {
+    // Add multiple lines close together to create thick line effect
+    for (let i = 0; i < numLines; i++) {
+        const offset = (i - numLines/2) * 0.01;
+        if (isHorizontal) {
+            // Horizontal line - offset in Z direction
+            addLine([v(start.x, 0.01, start.z + offset), v(end.x, 0.01, end.z + offset)]);
+        } else {
+            // Vertical line - offset in X direction
+            addLine([v(start.x + offset, 0.01, start.z), v(end.x + offset, 0.01, end.z)]);
+        }
+    }
+}
+
 const v = (x, y, z) => new THREE.Vector3(x, y, z);
-addLine([v(-W/2, 0, -L/2), v(W/2, 0, -L/2)]); // far baseline
-addLine([v(-W/2, 0, L/2), v(W/2, 0, L/2)]);   // near baseline
-addLine([v(-W/2, 0, 0), v(W/2, 0, 0)]);       // net line
+
+// Thick baselines
+addThickLine(v(-W/2, 0, -L/2), v(W/2, 0, -L/2), true); // far baseline
+addThickLine(v(-W/2, 0, L/2), v(W/2, 0, L/2), true);   // near baseline
+
+// Thick net line
+addThickLine(v(-W/2, 0, 0), v(W/2, 0, 0), true);       // net line
 
 // Kitchen lines (7ft = 2.134m from net)
 const kd = 2.134;
-addLine([v(-W/2, 0, -kd), v(W/2, 0, -kd)]); // far kitchen
-addLine([v(-W/2, 0, kd), v(W/2, 0, kd)]);   // near kitchen
+addThickLine(v(-W/2, 0, -kd), v(W/2, 0, -kd), true); // far kitchen
+addThickLine(v(-W/2, 0, kd), v(W/2, 0, kd), true);   // near kitchen
 
 // Center service lines (broken into segments that don't cross kitchen)
-addLine([v(0, 0, -L/2), v(0, 0, -kd)]); // far service area to kitchen
-addLine([v(0, 0, kd), v(0, 0, L/2)]);   // kitchen to near service area
+addThickLine(v(0, 0, -L/2), v(0, 0, -kd), false); // far service area to kitchen
+addThickLine(v(0, 0, kd), v(0, 0, L/2), false);   // kitchen to near service area
+
+// Thick boundary lines around entire court perimeter
+addThickLine(v(-W/2, 0, -L/2), v(W/2, 0, -L/2), true);  // Top boundary (far side)
+addThickLine(v(-W/2, 0, L/2), v(W/2, 0, L/2), true);    // Bottom boundary (near side)
+addThickLine(v(-W/2, 0, -L/2), v(-W/2, 0, L/2), false); // Left boundary
+addThickLine(v(W/2, 0, -L/2), v(W/2, 0, L/2), false);   // Right boundary
 
 // Lighting
 scene.add(new THREE.HemisphereLight(0xffffff, 0x444444, 1));
