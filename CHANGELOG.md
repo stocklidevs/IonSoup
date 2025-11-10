@@ -4,6 +4,22 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [1.3.1] - 2025-11-10
+
+### Added
+- **Physics-Based Ball Animation**: Implemented a realistic, physics-driven pickleball animation that simulates a complete shot trajectory.
+- **Continuous Physics Engine**: The ball's movement is now governed by a continuous simulation that models velocity, gravity, and collisions.
+- **Realistic Bouncing**: Ball bounces now simulate energy loss (coefficient of restitution) and ground friction, causing the ball to decelerate and bounce lower each time until it comes to a rest.
+- **Dynamic Trajectory Calculation**: The initial launch velocity is calculated based on physics principles to produce a perfect parabolic arc.
+- **Interactive Controls Panel**: Added a control panel with sliders for real-time adjustments to the simulation.
+- **Launch Angle Control**: A new slider allows dynamic control of the ball's launch angle from 15° (drive) to 75° (lob).
+- **Ball Speed Control**: Added a slider to adjust the ball's overall speed from 50% to 150% of the calculated velocity.
+- **Start Position Control**: Implemented sliders to change the ball's starting position along the X-axis (creating cross-court shots) and Y-axis (from the kitchen to the baseline).
+
+### Changed
+- **Animation Logic**: Replaced the previous, simpler animation with a robust physics engine for greater realism and interactivity.
+- **Shot Variety**: The simulation can now produce a wide variety of shots (drives, lobs, cross-court) by combining the new slider controls.
+
 ## [1.1.6] - 2025-11-09
 
 ### Added

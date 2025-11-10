@@ -11,7 +11,30 @@
   <button onclick="frontView()">Front</button>
   <button onclick="sideView()">Side</button>
   <button onclick="isometricView()">Iso</button>
-  <button onclick="resetView()">Reset</button>
+  <button onclick="resetView()">Reset View</button>
+  <button id="ballToggle" onclick="toggleBall()">Ball: ON</button>
+</div>
+<div style="position: absolute; top: 40px; left: 10px; color: white; font-family: sans-serif; background: rgba(0,0,0,0.5); padding: 10px; border-radius: 5px;">
+    <div style="margin-bottom: 5px;">
+        <label for="launchAngle" style="width: 120px; display: inline-block;">Launch Angle:</label>
+        <input type="range" id="launchAngle" min="15" max="75" value="45" step="1">
+        <span id="angleValue" style="width: 40px; display: inline-block; text-align: right;">45°</span>
+    </div>
+    <div style="margin-bottom: 5px;">
+        <label for="ballSpeed" style="width: 120px; display: inline-block;">Ball Speed:</label>
+        <input type="range" id="ballSpeed" min="50" max="150" value="100" step="1">
+        <span id="speedValue" style="width: 40px; display: inline-block; text-align: right;">100%</span>
+    </div>
+    <div>
+        <label for="startPosX" style="width: 120px; display: inline-block;">Start Position (X):</label>
+        <input type="range" id="startPosX" min="-3" max="3" value="0" step="0.1">
+        <span id="startPosXValue" style="width: 40px; display: inline-block; text-align: right;">0.0m</span>
+    </div>
+    <div>
+        <label for="startPosY" style="width: 120px; display: inline-block;">Start Position (Y):</label>
+        <input type="range" id="startPosY" min="2.2" max="6.7" value="5.7" step="0.1">
+        <span id="startPosYValue" style="width: 40px; display: inline-block; text-align: right;">5.7m</span>
+    </div>
 </div>
 
 <!-- Load Three.js from CDN -->
@@ -131,6 +154,164 @@ scene.add(topTape);
 // Lighting
 scene.add(new THREE.HemisphereLight(0xffffff, 0x444444, 1));
 
+// Pickleball animation
+const ballRadius = 0.04; // Pickleball is about 2.87 inches = 0.073m, using slightly larger for visibility
+const ballGeometry = new THREE.SphereGeometry(ballRadius, 16, 16);
+const ballMaterial = new THREE.MeshBasicMaterial({
+    color: 0xffff00, // Yellow pickleball color
+    transparent: true,
+    opacity: 0.9
+});
+const ball = new THREE.Mesh(ballGeometry, ballMaterial);
+scene.add(ball);
+
+// Ball animation state
+const courtMargin = 1.0; // Keep ball 1 meter inside court boundaries
+const courtSurfaceY = ballRadius + 0.01; // Court surface level
+const g = 9.8; // Gravity constant in m/s²
+let ballAnimation = {
+    startPos: new THREE.Vector3(0, courtSurfaceY, L / 2 - courtMargin),
+    endPos: new THREE.Vector3(0, courtSurfaceY, -L / 2 + courtMargin), // Corrected this line
+    launchAngleDeg: 45, // Initial launch angle in degrees
+    speedMultiplier: 1.0, // Controls the overall speed of the shot
+    restDuration: 1.0,
+    time: 0,
+    isResting: false,
+    bounceCount: 0,
+    minBounceVelocity: Math.sqrt(2 * g * 0.02), // Stop bouncing when rebound velocity is too low (corresponds to a 2cm bounce)
+    currentPos: new THREE.Vector3(0, courtSurfaceY, L / 2 - courtMargin),
+    velocity: new THREE.Vector3(0, 0, 0),
+    enabled: true
+};
+
+// Reset ball animation
+function resetBallAnimation() {
+    ballAnimation.time = 0;
+    ballAnimation.isResting = false;
+    ballAnimation.bounceCount = 0;
+    ballAnimation.currentPos.copy(ballAnimation.startPos);
+
+    // Physics calculation based on launch angle
+    const angleRad = ballAnimation.launchAngleDeg * (Math.PI / 180);
+    const R = Math.abs(ballAnimation.endPos.z - ballAnimation.startPos.z); // Horizontal range
+    
+    // Using the trajectory equation: y = x*tan(a) - (g*x^2) / (2*v0^2*cos^2(a))
+    // For a full arc (y=0 at start and end), we can derive initial velocity v0.
+    const v0_squared = (g * R) / Math.sin(2 * angleRad);
+    const v0 = Math.sqrt(v0_squared) * ballAnimation.speedMultiplier;
+    
+    const v_y0 = v0 * Math.sin(angleRad); // Initial vertical velocity
+    const v_z = v0 * Math.cos(angleRad); // Initial horizontal velocity
+
+    // The velocity in z should be negative to move from start to end
+    ballAnimation.velocity.set(0, v_y0, -v_z);
+    
+    ball.position.copy(ballAnimation.currentPos);
+}
+
+// Event listener for the launch angle slider
+document.getElementById('launchAngle').addEventListener('input', function(e) {
+    const angle = parseInt(e.target.value);
+    ballAnimation.launchAngleDeg = angle;
+    document.getElementById('angleValue').textContent = `${angle}°`;
+    resetBallAnimation(); // Recalculate and reset the animation with the new angle
+});
+
+// Event listener for the ball speed slider
+document.getElementById('ballSpeed').addEventListener('input', function(e) {
+    const speed = parseInt(e.target.value);
+    ballAnimation.speedMultiplier = speed / 100;
+    document.getElementById('speedValue').textContent = `${speed}%`;
+    resetBallAnimation();
+});
+
+// Event listener for the start position X slider
+document.getElementById('startPosX').addEventListener('input', function(e) {
+    const xPos = parseFloat(e.target.value);
+    ballAnimation.startPos.x = xPos;
+    ballAnimation.endPos.x = -xPos; // Make the ball travel cross-court
+    document.getElementById('startPosXValue').textContent = `${xPos.toFixed(1)}m`;
+    resetBallAnimation();
+});
+
+// Event listener for the start position Y slider
+document.getElementById('startPosY').addEventListener('input', function(e) {
+    const zPos = parseFloat(e.target.value);
+    const travelDistance = Math.abs(ballAnimation.endPos.z - ballAnimation.startPos.z);
+    
+    ballAnimation.startPos.z = zPos;
+    // Recalculate the end position to maintain a consistent travel distance
+    ballAnimation.endPos.z = zPos - travelDistance;
+
+    document.getElementById('startPosYValue').textContent = `${zPos.toFixed(1)}m`;
+    resetBallAnimation();
+});
+
+// Toggle ball animation
+window.toggleBall = function() {
+    ballAnimation.enabled = !ballAnimation.enabled;
+    document.getElementById('ballToggle').textContent = ballAnimation.enabled ? 'Ball: ON' : 'Ball: OFF';
+    if (!ballAnimation.enabled) {
+        ball.visible = false;
+    } else {
+        ball.visible = true;
+        resetBallAnimation();
+    }
+};
+
+// Update ball position with continuous physics-based movement
+function updateBallAnimation(deltaTime) {
+    if (!ballAnimation.enabled) return;
+
+    if (ballAnimation.isResting) {
+        // Resting phase - ball sits on court after bounces
+        ballAnimation.time += deltaTime;
+        if (ballAnimation.time >= ballAnimation.restDuration) {
+            // Rest period complete - reset animation for new flight
+            resetBallAnimation();
+        }
+        // Keep ball resting on court surface
+        return; // No position update needed, it's already at rest
+    }
+
+    // Continuous movement phase (flight and bounces)
+    
+    // Apply gravity
+    ballAnimation.velocity.y -= g * deltaTime;
+    
+    // Update position
+    ballAnimation.currentPos.add(
+        ballAnimation.velocity.clone().multiplyScalar(deltaTime)
+    );
+    
+    // Check for court surface collision
+    if (ballAnimation.currentPos.y <= courtSurfaceY) {
+        ballAnimation.currentPos.y = courtSurfaceY; // Snap to surface to prevent sinking
+        
+        const bounceDecay = 0.7; // Coefficient of restitution (e.g., 0.7 for a pickleball)
+        // Reverse vertical velocity and apply energy loss
+        ballAnimation.velocity.y *= -1 * bounceDecay;
+        
+        // Also apply some friction to the horizontal velocity
+        ballAnimation.velocity.z *= 0.8; // Increased friction from 0.9 to 0.8
+        
+        ballAnimation.bounceCount++;
+        
+        // If rebound velocity is too low, the ball effectively stops bouncing and starts resting
+        if (ballAnimation.velocity.y < ballAnimation.minBounceVelocity) {
+            ballAnimation.isResting = true;
+            ballAnimation.time = 0;
+            ballAnimation.velocity.set(0, 0, 0); // Stop all movement
+            ball.position.copy(ballAnimation.currentPos); // Final position update
+        }
+    }
+    
+    ball.position.copy(ballAnimation.currentPos);
+}
+
+// Initialize ball
+resetBallAnimation();
+
 // Camera presets
 function setCam(x, y, z) {
     camera.position.set(x, y, z);
@@ -151,12 +332,21 @@ window.addEventListener('resize', () => {
 });
 
 // Animation loop
-function animate() {
+let lastTime = 0;
+function animate(currentTime) {
     requestAnimationFrame(animate);
+    
+    // Calculate delta time
+    const deltaTime = lastTime ? (currentTime - lastTime) / 1000 : 0.016; // Convert to seconds
+    lastTime = currentTime;
+    
+    // Update ball animation
+    updateBallAnimation(deltaTime);
+    
     controls.update();
     renderer.render(scene, camera);
 }
-animate();
+animate(0);
 </script>
 </body>
 </html>
