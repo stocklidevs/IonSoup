@@ -42,277 +42,254 @@
 <script src="https://cdn.jsdelivr.net/npm/three@0.146.0/examples/js/controls/OrbitControls.js"></script>
 
 <script>
-// Court dimensions in meters (20ft x 44ft ≈ 6.1m x 13.41m)
+// --- GLOBAL SCOPE ---
 const W = 6.1, L = 13.41;
+const H = 0.01;
 
-// Scene setup
 const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(45, window.innerWidth/window.innerHeight, 0.1, 1000);
+const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
 const renderer = new THREE.WebGLRenderer({ antialias: true });
-renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.setClearColor(0x202020);
-document.body.appendChild(renderer.domElement);
-
-// OrbitControls
 const controls = new THREE.OrbitControls(camera, renderer.domElement);
-controls.target.set(0, 0, 0);
-controls.enableDamping = true;
+const clock = new THREE.Clock();
 
-// Court surface
-const courtMat = new THREE.MeshBasicMaterial({ color: 0x2d5016, side: THREE.DoubleSide });
-const court = new THREE.Mesh(new THREE.PlaneGeometry(W, L), courtMat);
-court.rotation.x = -Math.PI / 2;
-scene.add(court);
+let nearBaseline, farBaseline;
+let ball;
+const g = 9.8;
 
-// Court lines
-const lineMat = new THREE.LineBasicMaterial({ color: 0xffffff });
-const numLines = 5; // Number of lines to create thickness
+const ballRadius = 0.04;
+const courtSurfaceY = ballRadius + H;
+const courtMargin = 1.0;
 
-function addLine(points) {
-    const geometry = new THREE.BufferGeometry().setFromPoints(points);
-    scene.add(new THREE.Line(geometry, lineMat));
-}
-
-function addThickLine(start, end, isHorizontal = true) {
-    // Add multiple lines close together to create thick line effect
-    for (let i = 0; i < numLines; i++) {
-        const offset = (i - numLines/2) * 0.01;
-        if (isHorizontal) {
-            // Horizontal line - offset in Z direction
-            addLine([v(start.x, 0.01, start.z + offset), v(end.x, 0.01, end.z + offset)]);
-        } else {
-            // Vertical line - offset in X direction
-            addLine([v(start.x + offset, 0.01, start.z), v(end.x + offset, 0.01, end.z)]);
-        }
-    }
-}
-
-const v = (x, y, z) => new THREE.Vector3(x, y, z);
-
-// Thick baselines
-addThickLine(v(-W/2, 0, -L/2), v(W/2, 0, -L/2), true); // far baseline
-addThickLine(v(-W/2, 0, L/2), v(W/2, 0, L/2), true);   // near baseline
-
-// Thick net line
-addThickLine(v(-W/2, 0, 0), v(W/2, 0, 0), true);       // net line
-
-// Kitchen lines (7ft = 2.134m from net)
-const kd = 2.134;
-addThickLine(v(-W/2, 0, -kd), v(W/2, 0, -kd), true); // far kitchen
-addThickLine(v(-W/2, 0, kd), v(W/2, 0, kd), true);   // near kitchen
-
-// Center service lines (broken into segments that don't cross kitchen)
-addThickLine(v(0, 0, -L/2), v(0, 0, -kd), false); // far service area to kitchen
-addThickLine(v(0, 0, kd), v(0, 0, L/2), false);   // kitchen to near service area
-
-// Thick boundary lines around entire court perimeter
-addThickLine(v(-W/2, 0, -L/2), v(W/2, 0, -L/2), true);  // Top boundary (far side)
-addThickLine(v(-W/2, 0, L/2), v(W/2, 0, L/2), true);    // Bottom boundary (near side)
-addThickLine(v(-W/2, 0, -L/2), v(-W/2, 0, L/2), false); // Left boundary
-addThickLine(v(W/2, 0, -L/2), v(W/2, 0, L/2), false);   // Right boundary
-
-// Net (36 inches at sidelines, 34 inches at center)
-const netHeightSideline = 0.914; // 36 inches in meters
-const netHeightCenter = 0.864;   // 34 inches in meters
-const netWidth = W; // Full court width
-
-// Create net mesh with grid pattern
-// Net should stand vertically, spanning the width of the court
-// PlaneGeometry(width, height) creates plane in XY plane (vertical, width along X, height along Y)
-const netGeometry = new THREE.PlaneGeometry(netWidth, netHeightSideline, 20, 10);
-const netMaterial = new THREE.MeshBasicMaterial({
-    color: 0x333333,
-    wireframe: true,
-    transparent: true,
-    opacity: 0.7,
-    side: THREE.DoubleSide
-});
-const net = new THREE.Mesh(netGeometry, netMaterial);
-net.position.set(0, netHeightSideline / 2, 0); // Center at net line, half height up
-// No rotation needed - XY plane is already vertical (perpendicular to flat court)
-scene.add(net);
-
-// Net posts (optional - small cylinders at each end)
-const postGeometry = new THREE.CylinderGeometry(0.05, 0.05, netHeightSideline, 8);
-const postMaterial = new THREE.MeshBasicMaterial({ color: 0x666666 });
-const leftPost = new THREE.Mesh(postGeometry, postMaterial);
-leftPost.position.set(-W/2, netHeightSideline / 2, 0);
-scene.add(leftPost);
-const rightPost = new THREE.Mesh(postGeometry, postMaterial);
-rightPost.position.set(W/2, netHeightSideline / 2, 0);
-scene.add(rightPost);
-
-// Top tape/border of net (white lead cord)
-// Tape should run along the top of the net, spanning the width
-const tapeGeometry = new THREE.BoxGeometry(netWidth, 0.05, 0.02);
-const tapeMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
-const topTape = new THREE.Mesh(tapeGeometry, tapeMaterial);
-topTape.position.set(0, netHeightSideline, 0); // At top of net, center of court
-// No rotation needed - BoxGeometry already spans X (width) and Y (vertical)
-scene.add(topTape);
-
-// Lighting
-scene.add(new THREE.HemisphereLight(0xffffff, 0x444444, 1));
-
-// Pickleball animation
-const ballRadius = 0.04; // Pickleball is about 2.87 inches = 0.073m, using slightly larger for visibility
-const ballGeometry = new THREE.SphereGeometry(ballRadius, 16, 16);
-const ballMaterial = new THREE.MeshBasicMaterial({
-    color: 0xffff00, // Yellow pickleball color
-    transparent: true,
-    opacity: 0.9
-});
-const ball = new THREE.Mesh(ballGeometry, ballMaterial);
-scene.add(ball);
-
-// Ball animation state
-const courtMargin = 1.0; // Keep ball 1 meter inside court boundaries
-const courtSurfaceY = ballRadius + 0.01; // Court surface level
-const g = 9.8; // Gravity constant in m/s²
 let ballAnimation = {
     startPos: new THREE.Vector3(0, courtSurfaceY, L / 2 - courtMargin),
-    endPos: new THREE.Vector3(0, courtSurfaceY, -L / 2 + courtMargin), // Corrected this line
-    launchAngleDeg: 45, // Initial launch angle in degrees
-    speedMultiplier: 1.0, // Controls the overall speed of the shot
+    endPos: new THREE.Vector3(0, courtSurfaceY, -L / 2 + courtMargin),
+    launchAngleDeg: 45,
+    speedMultiplier: 1.0,
     restDuration: 1.0,
     time: 0,
     isResting: false,
     bounceCount: 0,
-    minBounceVelocity: Math.sqrt(2 * g * 0.02), // Stop bouncing when rebound velocity is too low (corresponds to a 2cm bounce)
+    minBounceVelocity: Math.sqrt(2 * g * 0.02),
     currentPos: new THREE.Vector3(0, courtSurfaceY, L / 2 - courtMargin),
     velocity: new THREE.Vector3(0, 0, 0),
     enabled: true
 };
 
-// Reset ball animation
+let baselineFlash = {
+    active: false,
+    lineGroup: null,
+    startTime: 0,
+    duration: 1.0,
+    interval: 0.15,
+    originalColor: new THREE.Color(0xffffff),
+    flashColor: new THREE.Color(0xff0000)
+};
+
+function init() {
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setClearColor(0x202020);
+    document.body.appendChild(renderer.domElement);
+    
+    controls.target.set(0, 0, 0);
+    controls.enableDamping = true;
+    
+    createCourt();
+    createBall();
+    setupEventListeners();
+    
+    resetView();
+    animate();
+}
+
+function createCourt() {
+    const courtMat = new THREE.MeshBasicMaterial({ color: 0x2d5016, side: THREE.DoubleSide });
+    const court = new THREE.Mesh(new THREE.PlaneGeometry(W, L), courtMat);
+    court.rotation.x = -Math.PI / 2;
+    scene.add(court);
+
+    farBaseline = addThickLine([-W/2, H, -L/2], [W/2, H, -L/2], 0xffffff, 3, 0.02);
+    nearBaseline = addThickLine([-W/2, H, L/2], [W/2, H, L/2], 0xffffff, 3, 0.02);
+    addThickLine([-W/2, H, -L/2], [-W/2, H, L/2], 0xffffff, 3, 0.02);
+    addThickLine([W/2, H, -L/2], [W/2, H, L/2], 0xffffff, 3, 0.02);
+
+    const kd = 2.134;
+    addThickLine([-W/2, H, -kd], [W/2, H, -kd], 0xffffff, 3, 0.02);
+    addThickLine([-W/2, H, kd], [W/2, H, kd], 0xffffff, 3, 0.02);
+    addThickLine([0, H, -L/2], [0, H, -kd], 0xffffff, 3, 0.02);
+    addThickLine([0, H, kd], [0, H, L/2], 0xffffff, 3, 0.02);
+    
+    const netHeight = 0.914;
+    const netGeom = new THREE.PlaneGeometry(W, netHeight, 20, 10);
+    const netMat = new THREE.MeshBasicMaterial({ color: 0x333333, wireframe: true, transparent: true, opacity: 0.7, side: THREE.DoubleSide });
+    const net = new THREE.Mesh(netGeom, netMat);
+    net.position.set(0, netHeight / 2, 0);
+    scene.add(net);
+    
+    const tapeGeom = new THREE.BoxGeometry(W, 0.05, 0.02);
+    const tapeMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+    const topTape = new THREE.Mesh(tapeGeom, tapeMat);
+    topTape.position.set(0, netHeight, 0);
+    scene.add(topTape);
+
+    // Net posts
+    const postGeom = new THREE.CylinderGeometry(0.05, 0.05, netHeight, 8);
+    const postMat = new THREE.MeshBasicMaterial({ color: 0x555555 });
+    const postLeft = new THREE.Mesh(postGeom, postMat);
+    postLeft.position.set(-W / 2, netHeight / 2, 0);
+    scene.add(postLeft);
+    const postRight = new THREE.Mesh(postGeom, postMat);
+    postRight.position.set(W / 2, netHeight / 2, 0);
+    scene.add(postRight);
+}
+
+function createBall() {
+    const ballGeom = new THREE.SphereGeometry(ballRadius, 16, 16);
+    const ballMat = new THREE.MeshBasicMaterial({ color: 0xffff00 });
+    ball = new THREE.Mesh(ballGeom, ballMat);
+    scene.add(ball);
+    resetBallAnimation();
+}
+
+function addThickLine(p1, p2, color, numLines, separation) {
+    const group = new THREE.Group();
+    const isHorizontal = Math.abs(p1[2] - p2[2]) < 0.01;
+    for (let i = 0; i < numLines; i++) {
+        const offset = (i - (numLines - 1) / 2) * separation;
+        let p1_offset, p2_offset;
+        if (isHorizontal) {
+            p1_offset = new THREE.Vector3(p1[0], p1[1], p1[2] + offset);
+            p2_offset = new THREE.Vector3(p2[0], p2[1], p2[2] + offset);
+        } else {
+            p1_offset = new THREE.Vector3(p1[0] + offset, p1[1], p1[2]);
+            p2_offset = new THREE.Vector3(p2[0] + offset, p2[1], p2[2]);
+        }
+        const lineGeom = new THREE.BufferGeometry().setFromPoints([p1_offset, p2_offset]);
+        const lineMat = new THREE.LineBasicMaterial({ color: color });
+        const line = new THREE.Line(lineGeom, lineMat);
+        group.add(line);
+    }
+    scene.add(group);
+    return group;
+}
+
 function resetBallAnimation() {
     ballAnimation.time = 0;
     ballAnimation.isResting = false;
     ballAnimation.bounceCount = 0;
     ballAnimation.currentPos.copy(ballAnimation.startPos);
 
-    // Physics calculation based on launch angle
     const angleRad = ballAnimation.launchAngleDeg * (Math.PI / 180);
-    const R = Math.abs(ballAnimation.endPos.z - ballAnimation.startPos.z); // Horizontal range
+    const R = Math.abs(ballAnimation.endPos.z - ballAnimation.startPos.z);
     
-    // Using the trajectory equation: y = x*tan(a) - (g*x^2) / (2*v0^2*cos^2(a))
-    // For a full arc (y=0 at start and end), we can derive initial velocity v0.
     const v0_squared = (g * R) / Math.sin(2 * angleRad);
     const v0 = Math.sqrt(v0_squared) * ballAnimation.speedMultiplier;
     
-    const v_y0 = v0 * Math.sin(angleRad); // Initial vertical velocity
-    const v_z = v0 * Math.cos(angleRad); // Initial horizontal velocity
-
-    // The velocity in z should be negative to move from start to end
-    ballAnimation.velocity.set(0, v_y0, -v_z);
+    const v_y0 = v0 * Math.sin(angleRad);
+    const v_z = v0 * Math.cos(angleRad);
     
+    const travelTime = R / v_z;
+    const v_x = (ballAnimation.endPos.x - ballAnimation.startPos.x) / travelTime;
+    ballAnimation.velocity.set(v_x, v_y0, -v_z);
+
     ball.position.copy(ballAnimation.currentPos);
 }
 
-// Event listener for the launch angle slider
-document.getElementById('launchAngle').addEventListener('input', function(e) {
-    const angle = parseInt(e.target.value);
-    ballAnimation.launchAngleDeg = angle;
-    document.getElementById('angleValue').textContent = `${angle}°`;
-    resetBallAnimation(); // Recalculate and reset the animation with the new angle
-});
-
-// Event listener for the ball speed slider
-document.getElementById('ballSpeed').addEventListener('input', function(e) {
-    const speed = parseInt(e.target.value);
-    ballAnimation.speedMultiplier = speed / 100;
-    document.getElementById('speedValue').textContent = `${speed}%`;
-    resetBallAnimation();
-});
-
-// Event listener for the start position X slider
-document.getElementById('startPosX').addEventListener('input', function(e) {
-    const xPos = parseFloat(e.target.value);
-    ballAnimation.startPos.x = xPos;
-    ballAnimation.endPos.x = -xPos; // Make the ball travel cross-court
-    document.getElementById('startPosXValue').textContent = `${xPos.toFixed(1)}m`;
-    resetBallAnimation();
-});
-
-// Event listener for the start position Y slider
-document.getElementById('startPosY').addEventListener('input', function(e) {
-    const zPos = parseFloat(e.target.value);
-    const travelDistance = Math.abs(ballAnimation.endPos.z - ballAnimation.startPos.z);
-    
-    ballAnimation.startPos.z = zPos;
-    // Recalculate the end position to maintain a consistent travel distance
-    ballAnimation.endPos.z = zPos - travelDistance;
-
-    document.getElementById('startPosYValue').textContent = `${zPos.toFixed(1)}m`;
-    resetBallAnimation();
-});
-
-// Toggle ball animation
-window.toggleBall = function() {
-    ballAnimation.enabled = !ballAnimation.enabled;
-    document.getElementById('ballToggle').textContent = ballAnimation.enabled ? 'Ball: ON' : 'Ball: OFF';
-    if (!ballAnimation.enabled) {
-        ball.visible = false;
-    } else {
-        ball.visible = true;
-        resetBallAnimation();
-    }
-};
-
-// Update ball position with continuous physics-based movement
 function updateBallAnimation(deltaTime) {
-    if (!ballAnimation.enabled) return;
-
+    if (!ballAnimation.enabled || !ball) return;
+    
     if (ballAnimation.isResting) {
-        // Resting phase - ball sits on court after bounces
         ballAnimation.time += deltaTime;
         if (ballAnimation.time >= ballAnimation.restDuration) {
-            // Rest period complete - reset animation for new flight
             resetBallAnimation();
         }
-        // Keep ball resting on court surface
-        return; // No position update needed, it's already at rest
+        return;
     }
 
-    // Continuous movement phase (flight and bounces)
-    
-    // Apply gravity
     ballAnimation.velocity.y -= g * deltaTime;
+    ballAnimation.currentPos.add(ballAnimation.velocity.clone().multiplyScalar(deltaTime));
     
-    // Update position
-    ballAnimation.currentPos.add(
-        ballAnimation.velocity.clone().multiplyScalar(deltaTime)
-    );
-    
-    // Check for court surface collision
     if (ballAnimation.currentPos.y <= courtSurfaceY) {
-        ballAnimation.currentPos.y = courtSurfaceY; // Snap to surface to prevent sinking
+        ballAnimation.currentPos.y = courtSurfaceY;
         
-        const bounceDecay = 0.7; // Coefficient of restitution (e.g., 0.7 for a pickleball)
-        // Reverse vertical velocity and apply energy loss
+        // Check if the FIRST bounce is out of bounds (long)
+        const isLong = Math.abs(ballAnimation.currentPos.z) > L / 2;
+        if (isLong && ballAnimation.bounceCount === 0) {
+            const targetLine = ballAnimation.currentPos.z > 0 ? nearBaseline : farBaseline;
+            triggerBaselineFlash(targetLine);
+        }
+
+        const bounceDecay = 0.7;
         ballAnimation.velocity.y *= -1 * bounceDecay;
-        
-        // Also apply some friction to the horizontal velocity
-        ballAnimation.velocity.z *= 0.8; // Increased friction from 0.9 to 0.8
+        ballAnimation.velocity.x *= 0.8;
+        ballAnimation.velocity.z *= 0.8;
         
         ballAnimation.bounceCount++;
         
-        // If rebound velocity is too low, the ball effectively stops bouncing and starts resting
         if (ballAnimation.velocity.y < ballAnimation.minBounceVelocity) {
             ballAnimation.isResting = true;
             ballAnimation.time = 0;
-            ballAnimation.velocity.set(0, 0, 0); // Stop all movement
-            ball.position.copy(ballAnimation.currentPos); // Final position update
+            ballAnimation.velocity.set(0, 0, 0);
         }
     }
-    
     ball.position.copy(ballAnimation.currentPos);
 }
 
-// Initialize ball
-resetBallAnimation();
+function triggerBaselineFlash(lineGroup) {
+    if (baselineFlash.active || !lineGroup) return;
+    baselineFlash.active = true;
+    baselineFlash.lineGroup = lineGroup;
+    baselineFlash.startTime = clock.getElapsedTime();
+}
 
-// Camera presets
+function updateBaselineFlash() {
+    if (!baselineFlash.active) return;
+    const elapsedTime = clock.getElapsedTime() - baselineFlash.startTime;
+    if (elapsedTime > baselineFlash.duration) {
+        baselineFlash.lineGroup.children.forEach(line => line.material.color.set(baselineFlash.originalColor));
+        baselineFlash.active = false;
+        baselineFlash.lineGroup = null;
+    } else {
+        const isFlash = Math.floor(elapsedTime / baselineFlash.interval) % 2 === 0;
+        const color = isFlash ? baselineFlash.flashColor : baselineFlash.originalColor;
+        baselineFlash.lineGroup.children.forEach(line => line.material.color.set(color));
+    }
+}
+
+function setupEventListeners() {
+    document.getElementById('launchAngle').addEventListener('input', e => {
+        const angle = parseInt(e.target.value);
+        ballAnimation.launchAngleDeg = angle;
+        document.getElementById('angleValue').textContent = `${angle}°`;
+        resetBallAnimation();
+    });
+    document.getElementById('ballSpeed').addEventListener('input', e => {
+        const speed = parseInt(e.target.value);
+        ballAnimation.speedMultiplier = speed / 100;
+        document.getElementById('speedValue').textContent = `${speed}%`;
+        resetBallAnimation();
+    });
+    document.getElementById('startPosX').addEventListener('input', e => {
+        const xPos = parseFloat(e.target.value);
+        ballAnimation.startPos.x = xPos;
+        ballAnimation.endPos.x = -xPos;
+        document.getElementById('startPosXValue').textContent = `${xPos.toFixed(1)}m`;
+        resetBallAnimation();
+    });
+    document.getElementById('startPosY').addEventListener('input', e => {
+        const zPos = parseFloat(e.target.value);
+        const travelDistance = L - 2 * courtMargin;
+        ballAnimation.startPos.z = zPos;
+        ballAnimation.endPos.z = zPos - travelDistance;
+        document.getElementById('startPosYValue').textContent = `${zPos.toFixed(1)}m`;
+        resetBallAnimation();
+    });
+    window.addEventListener('resize', () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+}
+
 function setCam(x, y, z) {
     camera.position.set(x, y, z);
     controls.update();
@@ -322,31 +299,26 @@ window.topView = () => setCam(0, 10, 0.01);
 window.frontView = () => setCam(0, 5, 10);
 window.sideView = () => setCam(10, 5, 0);
 window.isometricView = () => setCam(8, 6, 8);
-resetView();
+window.toggleBall = () => {
+    ballAnimation.enabled = !ballAnimation.enabled;
+    document.getElementById('ballToggle').textContent = ballAnimation.enabled ? 'Ball: ON' : 'Ball: OFF';
+    if (ball) ball.visible = ballAnimation.enabled;
+    if (ballAnimation.enabled) resetBallAnimation();
+};
 
-// Responsive
-window.addEventListener('resize', () => {
-    camera.aspect = window.innerWidth / window.innerHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize(window.innerWidth, window.innerHeight);
-});
-
-// Animation loop
-let lastTime = 0;
-function animate(currentTime) {
+function animate() {
     requestAnimationFrame(animate);
+    const deltaTime = clock.getDelta();
     
-    // Calculate delta time
-    const deltaTime = lastTime ? (currentTime - lastTime) / 1000 : 0.016; // Convert to seconds
-    lastTime = currentTime;
-    
-    // Update ball animation
     updateBallAnimation(deltaTime);
-    
+    updateBaselineFlash();
+
     controls.update();
     renderer.render(scene, camera);
 }
-animate(0);
+
+init();
+
 </script>
 </body>
 </html>

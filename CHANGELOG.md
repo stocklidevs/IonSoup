@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [1.3.2] - 2025-11-10
+
+### Added
+- **Out-of-Bounds Visual Feedback**: The baseline now flashes red for one second to indicate when the ball's first bounce lands out of bounds.
+
+### Fixed
+- **Flashing Logic**: Corrected the detection logic to ensure the baseline only flashes on the first bounce, not when the ball passes the line in the air.
+- **Critical Script Errors**: Performed a major code refactor of the visualizer script to resolve critical errors that were causing a white screen and loss of camera controls.
+- **Missing Net Posts**: Restored the 3D models for the net posts, which were inadvertently removed during a previous refactor.
+
 ## [1.3.1] - 2025-11-10
 
 ### Added

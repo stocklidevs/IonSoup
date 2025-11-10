@@ -53,6 +53,31 @@ This project utilizes the following technologies:
 
 </details>
 
+## Interactive 3D Pickleball Court Visualizer
+
+This project includes an advanced 3D pickleball court visualizer built with **Three.js**, designed for creating engaging content for platforms like YouTube. It serves as a powerful tool for demonstrating pickleball strategies, explaining shot trajectories, and analyzing game scenarios in a dynamic 3D environment.
+
+### Features
+- **Full 3D Environment**: A complete, accurately scaled 3D pickleball court.
+- **Physics-Based Ball Animation**: A realistic ball animation driven by a physics engine that simulates gravity, momentum, velocity, and bouncing with energy loss.
+- **Interactive Controls**: A comprehensive UI panel with sliders to dynamically control:
+    - **Launch Angle**: Adjust the ball's trajectory from a low drive (15°) to a high lob (75°).
+    - **Ball Speed**: Modify the shot's speed from 50% to 150% of the calculated velocity.
+    - **Start Position**: Change the ball's starting point along the X (side-to-side) and Y (baseline-to-kitchen) axes.
+- **Visual Feedback**: The baseline flashes red when the ball's first bounce lands out of bounds, providing clear, instant feedback.
+- **Professional Camera Controls**: Uses `OrbitControls` for intuitive 3D navigation (left-click to orbit, right-click to pan, scroll to zoom).
+- **Camera Presets**: Quick-select buttons for standard camera views (Top, Front, Side, Isometric).
+
+### How to Use
+1.  **Start a Local Server**: Due to browser security policies (CORS), this HTML file must be served from a local web server. The easiest way to do this is with Python's built-in server.
+    -   Open a terminal in the root of the `IonSoup` project.
+    -   Run the command: `python -m http.server 8000`
+2.  **Access the Visualizer**:
+    -   Open your web browser and navigate to: `http://localhost:8000/visualizations/court-three.html`
+3.  **Interact**:
+    -   Use the sliders in the top-left to configure the shot.
+    -   Use your mouse to change the camera angle and view of the court.
+
 ## Getting Started
 
 *(Instructions on how to set up and run the project will be added here.)*
