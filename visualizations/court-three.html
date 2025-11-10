@@ -88,6 +88,46 @@ addThickLine(v(-W/2, 0, L/2), v(W/2, 0, L/2), true);    // Bottom boundary (near
 addThickLine(v(-W/2, 0, -L/2), v(-W/2, 0, L/2), false); // Left boundary
 addThickLine(v(W/2, 0, -L/2), v(W/2, 0, L/2), false);   // Right boundary
 
+// Net (36 inches at sidelines, 34 inches at center)
+const netHeightSideline = 0.914; // 36 inches in meters
+const netHeightCenter = 0.864;   // 34 inches in meters
+const netWidth = W; // Full court width
+
+// Create net mesh with grid pattern
+// Net should stand vertically, spanning the width of the court
+// PlaneGeometry(width, height) creates plane in XY plane (vertical, width along X, height along Y)
+const netGeometry = new THREE.PlaneGeometry(netWidth, netHeightSideline, 20, 10);
+const netMaterial = new THREE.MeshBasicMaterial({
+    color: 0x333333,
+    wireframe: true,
+    transparent: true,
+    opacity: 0.7,
+    side: THREE.DoubleSide
+});
+const net = new THREE.Mesh(netGeometry, netMaterial);
+net.position.set(0, netHeightSideline / 2, 0); // Center at net line, half height up
+// No rotation needed - XY plane is already vertical (perpendicular to flat court)
+scene.add(net);
+
+// Net posts (optional - small cylinders at each end)
+const postGeometry = new THREE.CylinderGeometry(0.05, 0.05, netHeightSideline, 8);
+const postMaterial = new THREE.MeshBasicMaterial({ color: 0x666666 });
+const leftPost = new THREE.Mesh(postGeometry, postMaterial);
+leftPost.position.set(-W/2, netHeightSideline / 2, 0);
+scene.add(leftPost);
+const rightPost = new THREE.Mesh(postGeometry, postMaterial);
+rightPost.position.set(W/2, netHeightSideline / 2, 0);
+scene.add(rightPost);
+
+// Top tape/border of net (white lead cord)
+// Tape should run along the top of the net, spanning the width
+const tapeGeometry = new THREE.BoxGeometry(netWidth, 0.05, 0.02);
+const tapeMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
+const topTape = new THREE.Mesh(tapeGeometry, tapeMaterial);
+topTape.position.set(0, netHeightSideline, 0); // At top of net, center of court
+// No rotation needed - BoxGeometry already spans X (width) and Y (vertical)
+scene.add(topTape);
+
 // Lighting
 scene.add(new THREE.HemisphereLight(0xffffff, 0x444444, 1));
 
