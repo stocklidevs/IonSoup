@@ -1,11 +1,11 @@
 {
   "major": 1,
-  "minor": 2,
+  "minor": 3,
   "patch": 1,
   "lastMajorUpdate": "2025-11-09",
   "lastDeployment": "2025-11-10",
-  "lastDeploymentCommit": "49fdad27f92f9f5b9126aff30807b9ea78d5da43",
+  "lastDeploymentCommit": "f94110a11e3d594838fab855110993cfb46015ee",
   "commitsSinceLastMajor": 1,
-  "deploymentsSinceLastMajor": 2,
-  "version": "1.1.6"
+  "deploymentsSinceLastMajor": 3,
+  "version": "1.2.1"
 }
