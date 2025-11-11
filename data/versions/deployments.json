@@ -35,6 +35,15 @@
       "commits": [],
       "summary": "Deployment",
       "changes": {}
+    },
+    {
+      "version": "1.4.1",
+      "date": "2025-11-11",
+      "commit": "05e5e3739b1926ea4e7c8f0dc93bab6220d87c2d",
+      "shortCommit": "05e5e37",
+      "commits": [],
+      "summary": "Deployment",
+      "changes": {}
     }
   ]
 }
