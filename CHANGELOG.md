@@ -4,6 +4,49 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Added
+- **.gitignore File**: Added comprehensive `.gitignore` file to exclude `node_modules`, build artifacts, environment files, and IDE-specific files from version control
+- **Modular File Structure**: Split `court-three.html` into three separate files for better code organization:
+  - `court-three.css`: Dedicated stylesheet containing all CSS rules (~195 lines)
+  - `court-three.js`: Dedicated JavaScript file containing all application logic (~1018 lines)
+  - `court-three.html`: Clean HTML structure with external file references
+
+### Changed
+- **Code Organization**: Refactored `court-three.html` from a monolithic single-file structure to a modular three-file architecture:
+  - Separated inline `<style>` block into `court-three.css`
+  - Separated inline `<script>` block into `court-three.js`
+  - Moved inline styles for PiP container and drawing canvas to CSS file
+  - HTML now contains only structure and external file references
+- **Maintainability**: Improved code organization for better separation of concerns, easier maintenance, enhanced browser caching, and improved development tooling support
+
+## [1.4.0] - 2025-11-10
+
+### Added
+- **Modern Control Panel System**: Complete UI overhaul with collapsible panels and modern styling
+- **Ball Physics Controls**: Launch angle (15°-75°) and speed (50%-150%) sliders with paired number inputs
+- **Camera Positioning System**: Full 3D camera control with X (-12 to +12m), Y (-12 to +12m), Z (-15 to +15m) positioning
+- **Professional Lens Parameters**: Real camera simulation with focal length (10-200mm), sensor width/height (10-50mm), focus distance (1-20m)
+- **Picture-in-Picture (PiP)**: Live overlay window showing detection camera feed with independent toggle
+- **Line Detection Visualization**: Green ray tracing, red sphere markers, and in/out bounds indicators
+- **Virtual Court Lines**: Yellow dashed lines from net center to corners + cyan vertical reference line
+- **Player Model**: Toggleable 3D player figure with cylinder body, sphere head, and box limbs
+- **Drawing Overlay Tools**: Red pen drawing mode with screenshot capture and clear functionality
+- **StöckliDevs Branding**: Professional text with gradient fill and outline in both kitchens
+- **IonSoup Logo**: Company logo positioned symmetrically in both kitchen areas
+- **Real-time Camera Frustum**: Visual helper showing detection camera field of view
+
+### Changed
+- **UI Organization**: Streamlined control panel into 4 focused sections (Ball, Camera Position, Camera Lens, PiP)
+- **Input System**: All sliders now have paired number inputs for precise control
+- **Z-index Management**: Proper layering with control panel (2000), PiP (1000), drawing canvas (100)
+- **Branding Placement**: Text and logos properly oriented in both near and far kitchens
+
+### Fixed
+- **PiP Visibility**: Picture-in-Picture now works independently of line detection mode
+- **Camera Range**: Enabled negative values for X and Y camera positioning
+- **Rendering Logic**: PiP renders correctly when enabled regardless of other modes
+- **UI Visibility**: Control panel appears above all other elements with proper z-index
+
 ## [1.3.2] - 2025-11-10
 
 ### Added

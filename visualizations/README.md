@@ -1,120 +1,137 @@
-# Pickleball Court Visualizer
+# 3D Pickleball Court Visualizer
 
-An interactive HTML5 Canvas-based visualizer for pickleball courts, designed for YouTube video recording and educational content creation.
+A professional-grade interactive 3D visualizer for pickleball courts using Three.js, designed for YouTube video recording and advanced educational content creation.
 
-## Features
+## 🚀 Features
 
-### 🎯 Core Functionality
+### 🎯 Core 3D Visualization
+- **True 3D Environment**: Built with Three.js for professional rendering
+- **Orbit Controls**: Intuitive camera navigation (orbit, pan, zoom)
+- **View Presets**: Isometric, Top, Front, Side, and Reset views
+- **Accurate Court Geometry**: Official pickleball dimensions with proper line positioning
+- **3D Net with Posts**: Realistic net visualization with wireframe mesh and top tape
 
-- **Accurate Court Dimensions**: Based on official pickleball court measurements (20ft x 44ft)
-- **Interactive Canvas**: Pan, zoom, and manipulate the court view
-- **Multiple Drawing Tools**: Add annotations, trajectories, players, and more
-- **Customizable Colors**: Adjust court colors, line colors, and drawing colors
-- **Export Capability**: Export your visualizations as PNG images
+### ⚾ Advanced Ball Physics
+- **Physics-Based Animation**: Realistic ball trajectory with gravity and momentum
+- **Launch Angle Control**: Adjustable from 15° (drive) to 75° (lob)
+- **Ball Speed Control**: 50% to 150% velocity adjustment
+- **Start Position**: Customizable X and Y starting positions
+- **Out-of-Bounds Feedback**: Baseline flashes red for long shots
+- **Realistic Bouncing**: Energy loss and friction simulation
 
-### 🛠️ Drawing Tools
+### 📹 Professional Camera System
+- **Detection Camera**: Separate camera for analysis and PiP
+- **Full 3D Positioning**: X (-12 to +12m), Y (-12 to +12m), Z (-15 to +15m)
+- **Lens Parameters**: 
+  - Focal Length: 10-200mm (field of view control)
+  - Sensor Width/Height: 10-50mm (aspect ratio control)
+  - Focus Distance: 1-20m (depth of field)
+- **Camera Frustum Visualization**: Real-time field of view display
 
-1. **Select/Move**: Select and move existing drawings
-2. **Ball Trajectory**: Draw ball flight paths with smooth curves
-3. **Add Player**: Place player markers on the court
-4. **Arrow**: Draw directional arrows for strategy explanations
-5. **Line**: Draw straight lines for marking zones or paths
-6. **Circle**: Draw circles to highlight areas
-7. **Text Annotation**: Add text labels anywhere on the court
+### 🎨 Visualization Modes
+- **Line Detection**: Green ray tracing + red sphere markers + bounds indicators
+- **Virtual Lines**: Yellow dashed lines from net center to corners + cyan reference line
+- **Picture-in-Picture**: Live feed from detection camera in overlay window
+- **Player Model**: Toggleable 3D player figure with anatomical parts
+- **Drawing Overlay**: Red pen annotations with screenshot capture
 
-### 🎨 Visual Options
+### 🏢 Branding & Professional Features
+- **StöckliDevs Text**: Professional typography with gradient and outline
+- **IonSoup Logo**: Company logo in both kitchens with proper orientation
+- **Modern UI**: Collapsible control panels with glassmorphism styling
+- **Real-time Controls**: All adjustments apply instantly
 
-- **Grid Overlay**: Toggle 1-foot grid for precise measurements
-- **Measurements**: Show/hide court dimension labels
-- **Court Elements**:
-  - Net visualization
-  - Kitchen (non-volley zone) highlighting
-  - Service area markings
+## 🎮 Controls
 
-### 📐 What You Can Do
+### Camera Navigation
+- **Orbit**: Left-click + drag
+- **Pan**: Right-click + drag  
+- **Zoom**: Scroll wheel
+- **Reset**: Use "Reset Orbit" in control panel
 
-#### For YouTube Videos:
+### Control Panel Sections
+1. **🎾 Ball Controls**: Animation toggle, launch angle, ball speed
+2. **📹 Camera Position**: Preset views, custom X/Y/Z positioning
+3. **📷 Camera Lens**: Focal length, sensor dimensions, focus distance
+4. **📺 Picture-in-Picture**: PiP toggle, line detection mode
 
-1. **Strategy Explanations**:
-   - Draw ball trajectories to show shot paths
-   - Use arrows to indicate player movement
-   - Highlight zones with circles and colors
-   - Add text annotations for key concepts
+## 🛠️ Technical Implementation
 
-2. **Rule Demonstrations**:
-   - Show kitchen violations
-   - Illustrate service areas
-   - Demonstrate court boundaries
-   - Explain scoring positions
+### Technology Stack
+- **Three.js**: Professional 3D rendering engine
+- **WebGL**: Hardware-accelerated graphics
+- **Modern JavaScript**: ES6+ features and modular design
+- **CSS3**: Glassmorphism effects and smooth animations
 
-3. **Tactical Analysis**:
-   - Place players in different positions
-   - Draw multiple ball trajectories
-   - Show optimal shot placement
-   - Visualize court coverage
+### Key Features
+- **Physics Engine**: Continuous simulation of gravity, velocity, and collisions
+- **Real Camera Simulation**: Authentic lens parameters and field of view calculations
+- **Responsive Design**: Adapts to different screen sizes and resolutions
+- **Performance Optimized**: Efficient rendering for smooth animation
 
-4. **Training Content**:
-   - Create drill diagrams
-   - Show practice patterns
-   - Illustrate footwork paths
-   - Demonstrate positioning
-
-### 🎮 Controls
-
-- **Pan**: Click and drag (when Select tool is active)
-- **Zoom**: Scroll wheel or use zoom slider
-- **Delete**: Double-click on any drawing to remove it
-- **Reset View**: Click "Reset View" to return to default
-- **Fit to Screen**: Automatically adjust view to fit entire court
-
-### 💡 Tips for Video Recording
-
-1. **Use High Contrast Colors**: Choose bright drawing colors that stand out on screen
-2. **Zoom In for Details**: Use zoom to focus on specific areas during explanations
-3. **Layer Annotations**: Build up your explanation by adding elements progressively
-4. **Export Key Frames**: Save important visualizations as images for thumbnails or editing
-5. **Clear Between Scenes**: Use "Clear Drawings" to reset between different concepts
-
-### 📁 File Structure
+## 📁 File Structure
 
 ```
 visualizations/
-├── pickleball-court.html    # Main HTML file (open in browser)
-├── pickleball-court.js      # Canvas logic and interactions
-└── README.md                # This file
+├── court-three.html          # Main 3D visualizer (open in browser)
+├── README.md                 # This documentation
+└── (legacy files removed)    # Previous 2D canvas implementation
 ```
 
-### 🚀 Usage
+## 🚀 Usage
 
-Simply open `pickleball-court.html` in any modern web browser. No server or build process required!
+### Local Development Server
+Due to CORS restrictions, run a local server:
+```bash
+cd IonSoup/visualizations
+python -m http.server 8000
+```
+Then open: `http://localhost:8000/court-three.html`
 
-### 🔧 Technical Details
+### Production Deployment
+- Host on any web server (Apache, Nginx, etc.)
+- No build process required - works directly in browser
+- Compatible with all modern browsers
 
-- **Canvas-based**: Uses HTML5 Canvas for rendering
-- **No Dependencies**: Pure JavaScript, no external libraries
-- **Responsive**: Adapts to different screen sizes
-- **Export Ready**: PNG export for use in video editing software
+## 🎥 YouTube Content Creation Features
 
-### 🎥 Recording Setup Recommendations
+### Strategy Explanations
+- Use line detection to show ball tracking
+- Draw annotations directly on the 3D court
+- Show camera perspectives from different angles
+- Demonstrate shot trajectories with physics accuracy
 
-1. **Browser**: Use Chrome or Edge for best performance
-2. **Screen Recording**: Use OBS Studio, Camtasia, or similar
-3. **Resolution**: Record at 1080p or higher for clarity
-4. **Fullscreen**: Use browser fullscreen mode (F11) for clean recording
-5. **Cursor**: Consider hiding cursor or using a custom cursor for cleaner visuals
+### Technical Analysis
+- Use PiP to show what a real camera would see
+- Adjust lens parameters to match real equipment
+- Show court geometry from multiple viewpoints
+- Demonstrate player positioning and movement
 
-### 📝 Future Enhancements (Possible Additions)
+### Professional Presentation
+- Clean branding with StöckliDevs and IonSoup logos
+- Modern UI that doesn't clutter the screen
+- High-quality 3D visuals for engaging content
+- Export screenshots with annotations included
 
-- Animation support for ball trajectories
-- Player movement paths
-- Multiple court views (side view, 3D)
-- Save/load visualization states
-- Keyboard shortcuts
-- Undo/redo functionality
-- Measurement tools
-- Court templates (singles, doubles variations)
+## 🔧 Advanced Configuration
+
+### Camera Presets
+- **Isometric**: 3/4 view for overall court perspective
+- **Top**: Overhead view for strategy diagrams
+- **Front**: Net-level view for shot analysis
+- **Side**: Baseline view for trajectory study
+
+### Physics Parameters
+- Gravity: 9.8 m/s² (realistic physics)
+- Bounce decay: 0.7 (energy loss per bounce)
+- Friction: 0.8 (horizontal deceleration)
+- Minimum bounce height: 2cm (stopping condition)
+
+## 📝 Version History
+
+See `CHANGELOG.md` for detailed version history and feature additions.
 
 ---
 
-**Note**: This visualizer is designed specifically for the IonSoup project's YouTube content creation needs. The court dimensions follow official USA Pickleball Association standards.
+**Note**: This advanced 3D visualizer replaces the previous 2D canvas implementation, providing professional-grade tools for IonSoup's YouTube content creation needs. All court dimensions follow official pickleball standards with accurate 3D representation.
 

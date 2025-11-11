@@ -24,6 +24,8 @@ This project utilizes the following technologies:
 - **OpenCV**
 - **TensorFlow**
 - **Raspberry Pi**
+- **Three.js** - Professional 3D visualization for analysis and content creation
+- **WebGL** - Hardware-accelerated 3D graphics in browser
 
 ## Project Structure
 
@@ -49,6 +51,9 @@ This project utilizes the following technologies:
   - `data_processing/`: Scripts for processing and preparing data.
   - `modeling/`: Code for training and evaluating the model.
 - `tests/`: Tests for the source code.
+- `visualizations/`: 3D pickleball court visualizer for content creation and analysis
+  - `court-three.html`: Main 3D visualizer with advanced camera and physics controls
+  - `README.md`: Detailed documentation of visualization features
 - `.github/`: Contains GitHub Actions workflows for CI/CD.
 
 </details>
